@@ -6,6 +6,10 @@ const cookieParser = require("cookie-parser");
 const SocketIO = require("socket.io");
 
 const mqttClientInit = require("./mqttClient");
+const axios = require("axios");
+require("dotenv").config();
+const pool = require("./db");
+
 
 dotenv.config();
 const PORT = process.env.PORT;
@@ -24,6 +28,8 @@ app.use(express.json());
 
 app.use("/auth", require("./routes/authRoutes"));
 
+app.use("/data", require("./routes/dataRoutes"));
+
 app.get("/", (req, res) => res.send("Backend Çalışıyor!"));
 
 const server = http.createServer(app);
@@ -35,6 +41,55 @@ const io = new SocketIO.Server(server, {
     credentials: true,
   },
 });
+
+let latestSensorData = null;
+
+const mqttClient = mqttClientInit(io);
+mqttClient.on("message", (topic, message) => {
+  try {
+    const data = JSON.parse(message.toString());
+    latestSensorData = data;
+    io.emit("live_data", data);
+  } catch (e) {
+    console.error("Gelen MQTT mesajı ayrıştırılamadı:", e);
+  }
+});
+
+const runPredictionCycle = async () => {
+  if (!latestSensorData || latestSensorData.soc_pct === undefined) {
+    console.log("Tahmin yapmak için sensör verisi bekleniyor...");
+    return;
+  }
+
+  try {
+    const response = await axios.post("http://fake-ai:8001/predict", {
+      soc: latestSensorData.soc_pct,
+    });
+
+    const aiPrediction = response.data;
+    io.emit("ai_prediction_data", {
+      sensorData: latestSensorData,
+      aiPrediction: aiPrediction,
+      timestamp: new Date().toISOString(),
+    });
+
+    const { soc_pct } = latestSensorData;
+    const { predicted_soc } = aiPrediction;
+    const timestamp = new Date();
+
+    await pool.query(
+      "INSERT INTO timestamp_ (reading_timestamp, ai_soc, sensor_soc) VALUES ($1, $2, $3)",
+      [timestamp, predicted_soc, soc_pct]
+    );
+    console.log(
+      `✅ Kayıt Başarılı | predicted_soc: ${predicted_soc} | sensor_soc: ${soc_pct}`
+    );
+  } catch (error) {
+    console.error("İşlem döngüsünde bir hata oluştu:", error.message);
+  }
+};
+
+setInterval(runPredictionCycle, 5000);
 
 io.on("connection", (socket) => {
   console.log(`[Socket.IO] Kullanıcı bağlandı: ${socket.id}`);

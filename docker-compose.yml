@@ -7,8 +7,8 @@ services:
       POSTGRES_PASSWORD: mqzesh
       POSTGRES_DB: bms_database
     volumes:
-      - postgres_data:/var/lib/postgresql
-      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+    - postgres_data:/var/lib/postgresql
+    - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
     networks:
@@ -43,6 +43,7 @@ services:
     depends_on:
       - db
       - mosquitto
+      - fake-ai
     networks:
       - bms_network
 
@@ -62,6 +63,14 @@ services:
     networks:
       - bms_network
 
+  fake-ai:
+      build:
+        context: ./fake-ai
+      container_name: bms_fake_ai
+      ports:
+        - "8001:8001"
+      networks:
+        - bms_network
 volumes:
   postgres_data: 
 
