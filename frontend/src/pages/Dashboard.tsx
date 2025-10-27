@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useState, useEffect } from "react";
+import { useUserAuth } from "../hooks/useUserAuth";
+import { useSocketData } from "../hooks/useSocketData"; 
 import {
   AreaChart,
   Area,
@@ -11,7 +11,6 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { io } from "socket.io-client";
 import UserNavbar from "../components/userNavbar";
 type ChartDataPoint = {
   time: string;
@@ -43,96 +42,42 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function DashboardPage() {
-  const navigate = useNavigate();
-  const [userName, setUserName] = useState("");
-  const [userEmail, setUserEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const { userName, userEmail, isLoading } = useUserAuth();
+  const latestPredictionData = useSocketData("ai_prediction_data");
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [logData, setLogData] = useState<LogEntry[]>([]);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await axios.get("http://localhost:3001/auth/me", {
-          withCredentials: true,
-        });
-        if (response.status === 200) {
-          const user = response.data;
-          setUserName(user.username);
-          setUserEmail(user.email);
-        }
-      } catch (error) {
-        navigate("/login");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchUserData();
-  }, [navigate]);
+    if (!latestPredictionData) return;
+    const { sensorData, aiPrediction, timestamp } = latestPredictionData;
 
-  useEffect(() => {
-    const socket = io("http://localhost:3001", {
-      withCredentials: true,
+    const now = new Date(timestamp);
+    const timeLabel = now.toLocaleTimeString("tr-TR");
+
+    const newChartPoint: ChartDataPoint = {
+      time: timeLabel,
+      sensorSoc: parseFloat(sensorData.soc_pct),
+      aiSoc: aiPrediction.predicted_soc,
+    };
+
+    setChartData((prevData) => {
+      const updatedData = [...prevData, newChartPoint];
+      return updatedData.length > 4 ? updatedData.slice(1) : updatedData;
     });
 
-    socket.on("connect", () => {});
-
-    socket.on("ai_prediction_data", (data) => {
-      const { sensorData, aiPrediction, timestamp } = data;
-
-      const now = new Date(timestamp);
-      const timeLabel = now.toLocaleTimeString("tr-TR");
-
-      const newChartPoint: ChartDataPoint = {
-        time: timeLabel,
-        sensorSoc: parseFloat(sensorData.soc_pct),
-        aiSoc: aiPrediction.predicted_soc,
-      };
-
-      setChartData((prevData) => {
-        const updatedData = [...prevData, newChartPoint];
-        return updatedData.length > 4 ? updatedData.slice(1) : updatedData;
-      });
-
-      const newLogEntry: LogEntry = {
-        timestamp: now.toLocaleString("tr-TR"),
-        sensorSoc: `${parseFloat(sensorData.soc_pct).toFixed(2)}%`,
-        aiSoc: `${aiPrediction.predicted_soc.toFixed(2)}%`,
-      };
-
-      setLogData((prevLog) => [newLogEntry, ...prevLog].slice(0, 10));
-    });
-
-    return () => {
-      socket.disconnect();
+    const newLogEntry: LogEntry = {
+      timestamp: now.toLocaleString("tr-TR"),
+      sensorSoc: `${parseFloat(sensorData.soc_pct).toFixed(2)}%`,
+      aiSoc: `${aiPrediction.predicted_soc.toFixed(2)}%`,
     };
-  }, []);
 
-  const logout = async () => {
-    if (!window.confirm("Çıkış yapmak istediğinizden emin misiniz?")) return;
-    try {
-      await axios.post(
-        "http://localhost:3001/auth/logout",
-        {},
-        { withCredentials: true }
-      );
-      navigate("/login");
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    setLogData((prevLog) => [newLogEntry, ...prevLog].slice(0, 10));
+  }, [latestPredictionData]); 
 
-  if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        Yükleniyor...
-      </div>
-    );
-  }
-
+  if (isLoading) return <h2>Yükleniyor...</h2>;
   return (
     <div className="bg-[#FFFFFF] font-['Inter',_sans-serif]">
-      <UserNavbar userName={userName} userEmail={userEmail} onLogout={logout} />
+      <UserNavbar userName={userName} userEmail={userEmail} />
       <div className="relative flex h-auto min-h-screen w-full flex-col">
         <div className="flex h-full grow flex-col">
           <div className="px-4 md:px-10 flex flex-1 justify-center py-5">

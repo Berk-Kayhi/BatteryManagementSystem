@@ -1,22 +1,33 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 type UserNavbarProps = {
   userName: string;
   userEmail: string;
-  onLogout: () => void;
 };
 
 export default function UserNavbar({
   userName,
   userEmail,
-  onLogout,
 }: UserNavbarProps) {
   const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState(false);
   const [showProfileDetails, setProfileDetails] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+
+  const handleLogout = async () => {
+    const confirmed = window.confirm("Çıkış yapmak istediğinizden emin misiniz?");
+    if (!confirmed) return;
+    try {
+      await axios.post("http://localhost:3001/auth/logout", {}, { withCredentials: true });
+      navigate("/login");
+    } catch (error) {
+      console.error("Çıkış yaparken bir hata oluştu:", error);
+      alert("Çıkış yaparken bir hata oluştu. Lütfen tekrar deneyin.");
+    }
+  };
 
   return (
     <div className="top-4 fixed left-4 z-50">
@@ -77,7 +88,7 @@ export default function UserNavbar({
               </button>
 
               <button
-                onClick={onLogout}
+                onClick={handleLogout}
                 className="text-left text-red-600 hover:text-red-800 hover:translate-x-2 transition-all duration-200"
               >
                 <i className="ri-logout-box-line"> </i> Çıkış Yap

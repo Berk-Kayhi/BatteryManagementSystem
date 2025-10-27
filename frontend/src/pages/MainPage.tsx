@@ -1,15 +1,18 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
+import { useEffect, useState } from "react";
+import { useUserAuth } from "../hooks/useUserAuth";
+import { useSocketData } from "../hooks/useSocketData";
 import UserNavbar from "../components/userNavbar";
 
 export default function MainPage() {
-  const navigate = useNavigate();
-  const [userName, setUserName] = useState("");
-  const [userEmail, setUserEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const { userName, userEmail, isLoading } = useUserAuth();
+  const rawData = useSocketData("live_data");
   const [rows, setRows] = useState<Record<string, string> | null>(null);
+  
+  useEffect(() => {
+    if (rawData) {
+      setRows(rawData);
+    }
+  }, [rawData]);
 
   const sensorConfig: Record<
     string,
@@ -85,63 +88,10 @@ export default function MainPage() {
     power_kW: { label: "Güç", icon: "ri-flashlight-fill", unit: "kW" },
   };
 
-  useEffect(() => {
-    const socket = io("http://localhost:3001");
-    socket.on("live_data", (data: Record<string, string>) => {
-      try {
-        setRows(data);
-      } catch (error) {
-        console.error(error, data);
-      }
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await axios.get("http://localhost:3001/auth/me", {
-          withCredentials: true,
-        });
-        if (response.status === 200) {
-          const user = response.data;
-          setUserName(user.username);
-          setUserEmail(user.email);
-        }
-      } catch (error) {
-        navigate("/login");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchUserData();
-  }, [navigate]);
-
-  const logout = async () => {
-    if (!window.confirm("Çıkış yapmak istediğinizden emin misiniz?")) return;
-    try {
-      await axios.post(
-        "http://localhost:3001/auth/logout",
-        {},
-        { withCredentials: true }
-      );
-      navigate("/login");
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  if (isLoading) {
-    return <div>Yükleniyor...</div>;
-  }
-
+  if (isLoading) return <h2>Yükleniyor...</h2>;
   return (
     <div className="flex h-screen font-sans overflow-auto">
-      <UserNavbar userName={userName} userEmail={userEmail} onLogout={logout} />
-
+      <UserNavbar userName={userName} userEmail={userEmail} />
       <div className="flex flex-1 p-6 justify-center">
         <div className="flex flex-col items-center w-full pt-20">
           {rows ? (

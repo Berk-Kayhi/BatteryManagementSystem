@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useUserAuth } from "../hooks/useUserAuth";
 import UserNavbar from "../components/userNavbar";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -11,32 +12,11 @@ type TimestampData = {
 };
 
 export default function TimestampPage() {
+  const { userName, userEmail, isLoading } = useUserAuth();
+
   const navigate = useNavigate();
   const [data, setData] = useState<TimestampData[]>([]);
-  const [userName, setUserName] = useState("");
-  const [userEmail, setUserEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const [limit, setLimit] = useState<number | null>(20);
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await axios.get("http://localhost:3001/auth/me", {
-          withCredentials: true,
-        });
-        if (response.status === 200) {
-          const user = response.data;
-          setUserName(user.username);
-          setUserEmail(user.email);
-        }
-      } catch {
-        navigate("/login");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchUserData();
-  }, [navigate]);
 
   useEffect(() => {
     const fetchTimestamps = async () => {
@@ -58,24 +38,9 @@ export default function TimestampPage() {
   }, [limit]);
 
   if (isLoading) return <h2>Yükleniyor...</h2>;
-
-  const logout = async () => {
-    if (!window.confirm("Çıkış yapmak istediğinizden emin misiniz?")) return;
-    try {
-      await axios.post(
-        "http://localhost:3001/auth/logout",
-        {},
-        { withCredentials: true }
-      );
-      navigate("/login");
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   return (
     <>
-      <UserNavbar userName={userName} userEmail={userEmail} onLogout={logout} />
+      <UserNavbar userName={userName} userEmail={userEmail}/>
       <div className="flex mx-50 justify-around">
         <div className="rounded-full flex bg-[#f8f9fa] border w-fit border-[#ced9e9] gap-5 mt-20 p-1">
           <button
