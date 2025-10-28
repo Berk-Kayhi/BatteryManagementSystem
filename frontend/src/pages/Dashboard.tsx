@@ -76,7 +76,7 @@ export default function DashboardPage() {
 
   if (isLoading) return <h2>Yükleniyor...</h2>;
   return (
-    <div className="bg-[#FFFFFF] font-['Inter',_sans-serif]">
+    <div>
       <UserNavbar userName={userName} userEmail={userEmail} />
       <div className="relative flex h-auto min-h-screen w-full flex-col">
         <div className="flex h-full grow flex-col">
