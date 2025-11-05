@@ -14,7 +14,6 @@ type TimestampData = {
 export default function TimestampPage() {
   const { userName, userEmail, isLoading } = useUserAuth();
 
-  const navigate = useNavigate();
   const [data, setData] = useState<TimestampData[]>([]);
   const [limit, setLimit] = useState<number | null>(20);
 

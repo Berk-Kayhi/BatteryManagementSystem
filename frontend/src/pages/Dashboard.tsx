@@ -1,78 +1,57 @@
 import { useState, useEffect } from "react";
 import { useUserAuth } from "../hooks/useUserAuth";
-import { useSocketData } from "../hooks/useSocketData"; 
+import axios from "axios";
 import {
   AreaChart,
   Area,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
   ResponsiveContainer,
   Legend,
 } from "recharts";
 import UserNavbar from "../components/userNavbar";
-type ChartDataPoint = {
-  time: string;
-  sensorSoc: number;
-  aiSoc: number;
-};
 
-type LogEntry = {
-  timestamp: string;
-  aiSoc: string;
-  sensorSoc: string;
-};
-
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white p-3 rounded-lg border border-gray-300 shadow-lg">
-        <p className="text-sm font-semibold text-gray-600">{`Zaman: ${label}`}</p>
-        <p className="text-sm text-[#00529B]">{`Sensor SOC: ${payload[0].value.toFixed(
-          2
-        )}%`}</p>
-        <p className="text-sm text-[#FF6C00]">{`AI Tahmini: ${payload[1].value.toFixed(
-          2
-        )}%`}</p>
-      </div>
-    );
-  }
-  return null;
+type TimestampData = {
+  id: number;
+  reading_timestamp: string;
+  ai_soc: string;
+  sensor_soc: string;
 };
 
 export default function DashboardPage() {
   const { userName, userEmail, isLoading } = useUserAuth();
-  const latestPredictionData = useSocketData("ai_prediction_data");
-  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
-  const [logData, setLogData] = useState<LogEntry[]>([]);
+  const [data, setData] = useState<TimestampData[]>([]);
+  const [tableData, setTableData] = useState<TimestampData[]>([]);
+  const formatTimeTick = (timestamp: string) => {
+    return new Date(timestamp).toLocaleString("tr-TR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  };
 
   useEffect(() => {
-    if (!latestPredictionData) return;
-    const { sensorData, aiPrediction, timestamp } = latestPredictionData;
+    const fetchTimestamps = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3001/data/timestamp",
+          { withCredentials: true }
+        );
 
-    const now = new Date(timestamp);
-    const timeLabel = now.toLocaleTimeString("tr-TR");
-
-    const newChartPoint: ChartDataPoint = {
-      time: timeLabel,
-      sensorSoc: parseFloat(sensorData.soc_pct),
-      aiSoc: aiPrediction.predicted_soc,
+        const latestData = response.data.slice(-10);
+        setData(latestData);
+        const reversedForTable = [...latestData].reverse();
+        setTableData(reversedForTable);
+      } catch (error) {
+        console.error("Timestamp verileri alınamadı:", error);
+      }
     };
 
-    setChartData((prevData) => {
-      const updatedData = [...prevData, newChartPoint];
-      return updatedData.length > 4 ? updatedData.slice(1) : updatedData;
-    });
-
-    const newLogEntry: LogEntry = {
-      timestamp: now.toLocaleString("tr-TR"),
-      sensorSoc: `${parseFloat(sensorData.soc_pct).toFixed(2)}%`,
-      aiSoc: `${aiPrediction.predicted_soc.toFixed(2)}%`,
-    };
-
-    setLogData((prevLog) => [newLogEntry, ...prevLog].slice(0, 10));
-  }, [latestPredictionData]); 
+    fetchTimestamps();
+    const interval = setInterval(fetchTimestamps, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   if (isLoading) return <h2>Yükleniyor...</h2>;
   return (
@@ -86,7 +65,11 @@ export default function DashboardPage() {
                 <div className="w-full h-96 bg-white p-4 rounded-lg border border-[#ced9e9]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
-                      data={chartData}
+                      data={data.map((item) => ({
+                        time: item.reading_timestamp,
+                        sensorSoc: parseFloat(item.sensor_soc),
+                        aiSoc: parseFloat(item.ai_soc),
+                      }))}
                       margin={{ top: 5, right: 20, left: -10, bottom: 5 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="#e6ecf4" />
@@ -95,6 +78,7 @@ export default function DashboardPage() {
                         tick={{ fill: "#476a9e", fontSize: 12 }}
                         tickLine={false}
                         axisLine={false}
+                        tickFormatter={formatTimeTick}
                       />
                       <YAxis
                         tick={{ fill: "#476a9e", fontSize: 12 }}
@@ -103,7 +87,6 @@ export default function DashboardPage() {
                         domain={["dataMin - 2", "dataMax + 2"]}
                         tickFormatter={(value) => `${value}%`}
                       />
-                      <Tooltip content={<CustomTooltip />} />
                       <Legend
                         verticalAlign="top"
                         align="right"
@@ -153,19 +136,21 @@ export default function DashboardPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {logData.map((entry, index) => (
+                          {tableData.map((entry, index) => (
                             <tr
                               key={index}
                               className="border-t border-t-[#ced9e9]"
                             >
                               <td className="h-[60px] px-4 py-2 text-[#212529] text-sm font-normal leading-normal text-center md:text-left ">
-                                {entry.timestamp}
+                                {new Date(
+                                  entry.reading_timestamp
+                                ).toLocaleString("tr-TR")}
                               </td>
                               <td className="h-[60px] px-4 py-2 text-[#FF6C00] text-sm font-normal leading-normal">
-                                {entry.aiSoc}
+                                {entry.ai_soc}
                               </td>
                               <td className="h-[60px] px-4 py-2 text-[#00529B] text-sm font-normal leading-normal">
-                                {entry.sensorSoc}
+                                {entry.sensor_soc}
                               </td>
                             </tr>
                           ))}

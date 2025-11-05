@@ -8,20 +8,28 @@ type UserNavbarProps = {
   userEmail: string;
 };
 
-export default function UserNavbar({
-  userName,
-  userEmail,
-}: UserNavbarProps) {
+export default function UserNavbar({ userName, userEmail }: UserNavbarProps) {
   const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState(false);
   const [showProfileDetails, setProfileDetails] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-
+  const handleShowPopup = () => {
+    if (showProfileDetails) {
+      setProfileDetails(false);
+    } else {
+      setShowPopup(!showPopup);
+    }
+  };
   const handleLogout = async () => {
-    const confirmed = window.confirm("Çıkış yapmak istediğinizden emin misiniz?");
+    const confirmed = window.confirm(
+      "Çıkış yapmak istediğinizden emin misiniz?"
+    );
     if (!confirmed) return;
     try {
-      await axios.post("http://localhost:3001/auth/logout", {}, { withCredentials: true });
+      await axios.post(
+        "http://localhost:3001/auth/logout",
+        {},
+        { withCredentials: true }
+      );
       navigate("/login");
     } catch (error) {
       console.error("Çıkış yaparken bir hata oluştu:", error);
@@ -32,7 +40,7 @@ export default function UserNavbar({
   return (
     <div className="top-4 fixed left-4 z-50">
       <button
-        onClick={() => setShowPopup(!showPopup)}
+        onClick={() => handleShowPopup()}
         className="group flex items-center gap-3 rounded-xl bg-white border-4 border-gray-900 px-4 py-3 transition-all duration-200 hover:border-amber-600 hover:bg-amber-50"
         aria-label="Kullanıcı Menüsünü Aç"
       >
@@ -128,40 +136,6 @@ export default function UserNavbar({
               </div>
               <div>Kullanıcı Adı : {userName}</div>
               <div>E Posta : {userEmail}</div>
-            </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence mode="wait">
-        {showSettings && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.75 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.75 }}
-            transition={{ duration: 0.3, ease: "anticipate" }}
-            className="rounded-xl bg-white border-4 absolute top-25 border-gray-900  mt-4 px-6 py-6 text-gray-800"
-            style={{ originX: 0, originY: 0 }}
-          >
-            <nav className="flex flex-col space-y-4 text-3xl font-semibold ">
-              <div className="flex justify-between gap-40 ">
-                <button
-                  className="text-left hover:text-red-600 transition-all duration-200"
-                  onClick={() => {
-                    setShowSettings(false);
-                    setShowPopup(true);
-                  }}
-                >
-                  <i className="ri-arrow-left-line"></i>
-                </button>
-                <button
-                  className="text-left hover:text-red-600 right-0 transition-all duration-200"
-                  onClick={() => setShowSettings(false)}
-                >
-                  <i className="ri-close-line"></i>
-                </button>
-              </div>
-              <div>...</div>
             </nav>
           </motion.div>
         )}
