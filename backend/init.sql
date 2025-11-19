@@ -14,5 +14,8 @@ CREATE TABLE IF NOT EXISTS timestamp_ (
     sensor_soc DECIMAL(5, 2) NOT NULL,
     soh_pct DECIMAL(5, 2),
     voltage_diff_v DECIMAL(8, 4),
-    max_cell_voltage_v DECIMAL(8, 4)
+    max_cell_voltage_v DECIMAL(8, 4),
+    current_a DECIMAL(8, 4),
+    power_kw DECIMAL(8, 4),
+    voltage_v DECIMAL(8, 4)
 );
