@@ -2,6 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+const inputStyles =
+  "w-full rounded-2xl border border-gray-200 bg-white/80 px-4 py-3 text-base text-gray-900 placeholder-gray-500 transition focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40";
+
 export default function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -37,60 +40,69 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex w-screen h-screen font-sans">
-      <div className="flex justify-center items-center flex-1 p-4 w-full">
-        <div className="flex w-full max-w-md flex-col items-center relative">
-          <div className="w-11/12 p-8 rounded-xl  bg-white md:border-4 border-gray-900">
-            <h1 className="text-3xl mb-6 font-extrabold text-gray-900 md:hidden">
-              Giriş Yap
-            </h1>
-            <h1 className="hidden md:block text-3xl font-extrabold text-gray-900 mb-6 text-center">
-              Giriş Yap
-            </h1>
-            <form className="flex flex-col gap-7" onSubmit={handleSubmit}>
-              <input
-                type="text"
-                name="text"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="E-posta"
-                className="p-3 rounded-lg border-2 border-gray-900 bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 shadow-[2px_2px_0px_rgba(0,0,0,0.5)]"
-              />
-
-              <input
-                type="password"
-                name="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Şifre"
-                className="p-3 rounded-lg border-2 border-gray-900 bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 shadow-[2px_2px_0px_rgba(0,0,0,0.5)]"
-              />
-              <div className="justify-start flex ">
-                <input
-                  type="checkbox"
-                  name="rememberMe"
-                  checked={remember}
-                  onChange={(e) => setRemember(e.target.checked)}
-                  className="w-5 h-5"
-                />
-                <label className="ml-2 text-gray-700 text-center">
-                  Beni Hatırla
-                </label>
-              </div>
-
-              <button className="p-3 rounded-lg bg-gray-600 text-white font-extrabold text-lg border-2 border-gray-900 hover:bg-gray-700 transition">
+    <div className="min-h-screen bg-linear-to-br from-amber-50 via-white to-amber-100">
+      <div className="flex min-h-screen flex-col lg:flex-row">
+        <div className="flex flex-1 items-center justify-center px-8 py-12 lg:px-12">
+          <div className="p-12 border-3 shadow-2xl rounded-3xl">
+            <div className="w-full max-w-sm">
+              <h1 className="text-3xl font-black text-gray-900 underline underline-offset-12 decoration-gray-500/50">
                 Giriş Yap
-              </button>
-              <p className="text-center text-sm text-gray-700">
-                Hesabın yok mu?{" "}
-                <a
-                  onClick={() => navigate("/register")}
-                  className="cursor-pointer text-orange-600 hover:text-orange-700 font-bold underline transition"
-                >
-                  Kayıt Ol
-                </a>
-              </p>
-            </form>
+              </h1>
+              <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-[0.3em] text-gray-500">
+                    E-posta
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="ornek@firma.com"
+                    className={inputStyles}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-[0.3em] text-gray-500">
+                    Şifre
+                  </label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className={inputStyles}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between text-sm text-gray-600">
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={remember}
+                      onChange={(e) => setRemember(e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                    />
+                    Beni hatırla
+                  </label>
+                </div>
+
+                <button className="w-full rounded-2xl bg-amber-500 py-3 text-lg font-semibold text-white transition hover:bg-amber-600">
+                  Devam Et
+                </button>
+
+                <p className="text-center text-sm text-gray-600">
+                  Hesabın yok mu?{" "}
+                  <button
+                    type="button"
+                    className="font-semibold text-amber-600 hover:text-amber-500"
+                    onClick={() => navigate("/register")}
+                  >
+                    Kayıt ol
+                  </button>
+                </p>
+              </form>
+            </div>
           </div>
         </div>
       </div>
