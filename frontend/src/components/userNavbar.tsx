@@ -66,6 +66,32 @@ export default function UserNavbar({ userName, userEmail }: UserNavbarProps) {
       alert("Çıkış yaparken bir hata oluştu. Lütfen tekrar deneyin.");
     }
   };
+  
+  const handleDeleteAccount = async () => {
+    const confirmed1 = window.confirm(
+      "Hesabınızı silmek istediğinizden emin misiniz?"
+    );
+    if (!confirmed1) {
+      return;
+    }
+    const confirmed2 = window.confirm(
+      "Hesabınızı sildiğiniz zaman verileriniz tamamen silinecektir. Bu işlem geri alınamaz. Onaylıyor musunuz?"
+      //güvenlik amacıyla şifre istenilebilir
+    );
+    if (!confirmed2) {
+      return;
+    }
+    try {
+      await axios.delete("http://localhost:3001/auth/delete", {
+        withCredentials: true,
+      });
+      navigate("/login");
+      alert("Hesabınız başarılı bir şekilde silindi.");
+    } catch (error) {
+      console.error("Hesabınız silinemedi:", error);
+      alert("Hesabınız silinemedi. Lütfen tekrar deneyin.");
+    }
+  };
 
   return (
     <div className="fixed left-6 top-6 z-50">
@@ -197,6 +223,18 @@ export default function UserNavbar({ userName, userEmail }: UserNavbarProps) {
                     {userEmail}
                   </p>
                 </div>
+                <button
+                  onClick={handleDeleteAccount}
+                  className="group mt-3 flex items-center justify-between rounded-2xl  bg-red-50 border-2 px-4 py-3 text-left text-red-700 transition-all hover:-translate-y-0.5 hover:bg-red-100"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white border text-2xl text-red-600 transition group-hover:bg-red-50">
+                      <i className="ri-close-line"></i>
+                    </div>
+                    <span>Hesabı Kalıcı Olarak Kapat!</span>
+                  </div>
+                  <i className="ri-arrow-right-down-line text-lg text-red-500 transition group-hover:text-red-700"></i>
+                </button>
               </div>
             </nav>
           </motion.div>

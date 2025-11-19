@@ -2,6 +2,7 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const pool = require("../db");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -97,6 +98,27 @@ router.post("/login", async (req, res) => {
     );
     res.cookie("token", token, { httpOnly: true, maxAge: remember ? 7 * 24 * 60 * 60 * 1000 : 60 * 60 * 1000 });
     res.json({ message: "Giriş başarılı" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server Error" });
+  }
+});
+
+router.delete("/delete", authMiddleware, async (req, res) => {
+  try {
+    const loggedInUserId = req.user.id;
+
+    const deleteResult = await pool.query("DELETE FROM users WHERE id = $1", [
+      loggedInUserId,
+    ]);
+
+    if (deleteResult.rowCount === 0) {
+      return res.status(404).json({ error: "Kullanıcı bulunamadı" });
+    }
+
+    res.clearCookie("token");
+
+    res.json({ message: "Kullanıcı başarıyla silindi" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server Error" });
