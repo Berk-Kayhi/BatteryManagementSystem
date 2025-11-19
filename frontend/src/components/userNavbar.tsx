@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -12,6 +12,36 @@ export default function UserNavbar({ userName, userEmail }: UserNavbarProps) {
   const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState(false);
   const [showProfileDetails, setProfileDetails] = useState(false);
+  const userInitial = useMemo(
+    () => userName?.charAt(0)?.toUpperCase() ?? "?",
+    [userName]
+  );
+  const primaryActions = [
+    {
+      label: "Canlı Sensör Verisi",
+      icon: "ri-bar-chart-line",
+      description: "Gerçek zamanlı ölçüm akışı",
+      path: "/main",
+    },
+    {
+      label: "Batarya Sistem Durumu",
+      icon: "ri-numbers-line",
+      description: "Genel sağlık durumu",
+      path: "/graph",
+    },
+    {
+      label: "Grafik Ekranı (AI)",
+      icon: "ri-brain-line",
+      description: "Tahmin & analiz paneli",
+      path: "/predictions",
+    },
+    {
+      label: "Timestamp",
+      icon: "ri-time-line",
+      description: "Zaman damgası kaydı",
+      path: "/timestamp",
+    },
+  ];
   const handleShowPopup = () => {
     if (showProfileDetails) {
       setProfileDetails(false);
@@ -38,14 +68,14 @@ export default function UserNavbar({ userName, userEmail }: UserNavbarProps) {
   };
 
   return (
-    <div className="top-4 fixed left-4 z-50">
+    <div className="fixed left-6 top-6 z-50">
       <button
         onClick={() => handleShowPopup()}
-        className="group flex items-center gap-3 rounded-xl bg-white border-4 border-gray-900 px-4 py-3 transition-all duration-200 hover:border-amber-600 hover:bg-amber-50"
+        className="group flex items-center gap-3 rounded-2xl border-3  bg-white px-5 py-3 text-gray-900 shadow-lg transition-all duration-200 hover:border-amber-500 hover:bg-amber-50"
         aria-label="Kullanıcı Menüsünü Aç"
       >
         <i className="ri-menu-line text-2xl text-gray-900 transition-colors group-hover:text-amber-600"></i>
-        <span className="font-semibold text-lg text-gray-900 transition-colors group-hover:text-amber-600">
+        <span className="text-lg font-semibold tracking-wide text-gray-900 transition-colors group-hover:text-amber-600">
           {userName}
         </span>
       </button>
@@ -57,49 +87,82 @@ export default function UserNavbar({ userName, userEmail }: UserNavbarProps) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.75 }}
             transition={{ duration: 0.3, ease: "anticipate" }}
-            className="w-max rounded-xl bg-white border-4 absolute top-15 border-gray-900 mt-4 px-6 py-6 text-gray-800"
+            className="absolute top-15 mt-4 w-96 rounded-3xl border-3  bg-white px-6 py-6 text-gray-900 shadow-2xl"
             style={{ originX: 0, originY: 0 }}
           >
-            <nav className="flex flex-col space-y-4 text-3xl  font-semibold gap-4 ">
-              <button
-                className="text-left hover:text-amber-600 hover:translate-x-2 transition-all duration-200"
-                onClick={() => navigate("/main")}
-              >
-                <i className="ri-bar-chart-line"> </i> Canlı Sensör Verisi
-              </button>
-              <button
-                className="text-left hover:text-amber-600 hover:translate-x-2 transition-all duration-200"
-                onClick={() => navigate("/graph")}
-              >
-                <i className="ri-numbers-line"> </i> Batarya Sistem Durumu
-              </button>
-              <button
-                className="text-left hover:text-amber-600 hover:translate-x-2 transition-all duration-200"
-                onClick={() => navigate("/predictions")}
-              >
-                <i className="ri-brain-line"> </i> Grafik Ekranı (AI)
-              </button>
-              <button
-                className="text-left hover:text-amber-600 hover:translate-x-2 transition-all duration-200"
-                onClick={() => navigate("/timestamp")}
-              >
-                <i className="ri-time-line"> </i>Timestamp
-              </button>
-              <button
-                className="text-left hover:text-amber-600 hover:translate-x-2 transition-all duration-200"
-                onClick={() => {
-                  setProfileDetails(true);
-                  setShowPopup(false);
-                }}
-              >
-                <i className="ri-profile-line"> </i> Profil
-              </button>
+            <div className="rounded-2xl border-2 bg-amber-50 px-4 py-3">
+              <div className="flex items-center gap-4 text-gray-900">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-2xl font-semibold text-amber-700">
+                  {userInitial}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Hoş geldin</span>
+                  <span className="text-xl font-semibold text-gray-900">
+                    {userName}
+                  </span>
+                  <span className="text-xs uppercase tracking-[0.2em] text-amber-700">
+                    Kontrol Paneli
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <nav className="mt-5 flex flex-col gap-3 text-base font-semibold text-gray-900">
+              {primaryActions.map((item) => (
+                <button
+                  key={item.label}
+                  className="group flex items-center justify-between rounded-2xl border-2 bg-white px-4 py-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-500 hover:bg-amber-50"
+                  onClick={() => navigate(item.path)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border bg-amber-50 text-2xl text-amber-600 transition-all group-hover:border-amber-500 group-hover:bg-amber-100">
+                      <i className={item.icon}></i>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-gray-900">{item.label}</span>
+                      <span className="text-xs font-normal text-gray-500 group-hover:text-amber-700">
+                        {item.description}
+                      </span>
+                    </div>
+                  </div>
+                  <i className="ri-arrow-right-up-line text-lg text-gray-500 transition group-hover:text-amber-700"></i>
+                </button>
+              ))}
+
+              <div className="mt-2 rounded-2xl border-2 bg-amber-50/80 p-4">
+                <div className="flex items-center justify-between text-sm text-gray-700">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em] text-amber-800">
+                      Profil
+                    </p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      Hesap detayları
+                    </p>
+                  </div>
+                  <button
+                    className="group flex items-center gap-2 rounded-xl border-2 border-amber-500 px-3 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100"
+                    onClick={() => {
+                      setProfileDetails(true);
+                      setShowPopup(false);
+                    }}
+                  >
+                    <i className="ri-profile-line text-lg"></i>
+                    Görüntüle
+                  </button>
+                </div>
+              </div>
 
               <button
                 onClick={handleLogout}
-                className="text-left text-red-600 hover:text-red-800 hover:translate-x-2 transition-all duration-200"
+                className="group mt-3 flex items-center justify-between rounded-2xl  bg-red-50 border-2 px-4 py-3 text-left text-red-700 transition-all hover:-translate-y-0.5 hover:bg-red-100"
               >
-                <i className="ri-logout-box-line"> </i> Çıkış Yap
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white border text-2xl text-red-600 transition group-hover:bg-red-50">
+                    <i className="ri-logout-box-line"></i>
+                  </div>
+                  <span>Çıkış Yap</span>
+                </div>
+                <i className="ri-arrow-right-down-line text-lg text-red-500 transition group-hover:text-red-700"></i>
               </button>
             </nav>
           </motion.div>
@@ -113,29 +176,28 @@ export default function UserNavbar({ userName, userEmail }: UserNavbarProps) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.75 }}
             transition={{ duration: 0.3, ease: "anticipate" }}
-            className="w-max rounded-xl bg-white border-4 absolute top-15 border-gray-900 mt-4 px-6 py-6 text-gray-800"
+            className="absolute top-15 mt-4 w-96 rounded-3xl border-3  bg-white px-6 py-6 text-gray-900 shadow-2xl"
             style={{ originX: 0, originY: 0 }}
           >
-            <nav className="flex flex-col space-y-4 text-3xl font-semibold ">
-              <div className="flex justify-between gap-40 ">
-                <button
-                  className="text-left hover:text-red-600 transition-all duration-200"
-                  onClick={() => {
-                    setProfileDetails(false);
-                    setShowPopup(true);
-                  }}
-                >
-                  <i className="ri-arrow-left-line"></i>
-                </button>
-                <button
-                  className="text-left hover:text-red-600 right-0 transition-all duration-200"
-                  onClick={() => setProfileDetails(false)}
-                >
-                  <i className="ri-close-line"></i>
-                </button>
+            <nav className="flex flex-col gap-5 text-base font-medium text-gray-900">
+              <div className="grid gap-3">
+                <div className="rounded-2xl border-2 /70 bg-white px-4 py-3">
+                  <p className="text-xs uppercase tracking-[0.3em] text-gray-500">
+                    Ad
+                  </p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {userName}
+                  </p>
+                </div>
+                <div className="rounded-2xl border-2 /70 bg-white px-4 py-3">
+                  <p className="text-xs uppercase tracking-[0.3em] text-gray-500">
+                    E-Posta
+                  </p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {userEmail}
+                  </p>
+                </div>
               </div>
-              <div>Kullanıcı Adı : {userName}</div>
-              <div>E Posta : {userEmail}</div>
             </nav>
           </motion.div>
         )}
