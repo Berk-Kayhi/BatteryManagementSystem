@@ -10,7 +10,6 @@ const axios = require("axios");
 require("dotenv").config();
 const pool = require("./db");
 
-
 dotenv.config();
 const PORT = process.env.PORT;
 const app = express();
@@ -73,16 +72,24 @@ const runPredictionCycle = async () => {
       timestamp: new Date().toISOString(),
     });
 
-    const { soc_pct } = latestSensorData;
+    const { soc_pct, soh_pct, voltage_diff_V, max_cell_voltage_V } =
+      latestSensorData;
     const { predicted_soc } = aiPrediction;
     const timestamp = new Date();
 
     await pool.query(
-      "INSERT INTO timestamp_ (reading_timestamp, ai_soc, sensor_soc) VALUES ($1, $2, $3)",
-      [timestamp, predicted_soc, soc_pct]
+      "INSERT INTO timestamp_ (reading_timestamp, ai_soc, sensor_soc,soh_pct,voltage_diff_V,max_cell_voltage_V) VALUES ($1, $2, $3,$4,$5,$6)",
+      [
+        timestamp,
+        predicted_soc,
+        soc_pct,
+        soh_pct,
+        voltage_diff_V,
+        max_cell_voltage_V,
+      ]
     );
     console.log(
-      `✅ Kayıt Başarılı | predicted_soc: ${predicted_soc} | sensor_soc: ${soc_pct}`
+      `✅ Kayıt Başarılı | timestamp: ${timestamp}  | predicted_soc: ${predicted_soc} | sensor_soc: ${soc_pct} | soh_pct: ${soh_pct} | voltage_diff_V: ${voltage_diff_V} | max_cell_voltage_V: ${max_cell_voltage_V}`
     );
   } catch (error) {
     console.error("İşlem döngüsünde bir hata oluştu:", error.message);

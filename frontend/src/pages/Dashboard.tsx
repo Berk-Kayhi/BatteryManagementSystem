@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useUserAuth } from "../hooks/useUserAuth";
 import axios from "axios";
+import { useSocketData } from "../hooks/useSocketData";
 import {
   AreaChart,
   Area,
@@ -11,6 +12,7 @@ import {
   Legend,
 } from "recharts";
 import UserNavbar from "../components/userNavbar";
+import { motion, AnimatePresence } from "framer-motion";
 
 type TimestampData = {
   id: number;
@@ -18,9 +20,14 @@ type TimestampData = {
   ai_soc: string;
   sensor_soc: string;
 };
+const rowVariants = {
+  initial: { opacity: 0, height: 0 },
+  animate: { opacity: 1, height: "auto", transition: { duration: 0.4 } },
+};
 
 export default function DashboardPage() {
   const { userName, userEmail, isLoading } = useUserAuth();
+  const livePacket = useSocketData("ai_prediction_data");
   const [data, setData] = useState<TimestampData[]>([]);
   const [tableData, setTableData] = useState<TimestampData[]>([]);
   const [lastSync, setLastSync] = useState<string>("null");
@@ -44,16 +51,37 @@ export default function DashboardPage() {
         setData(latestData);
         const reversedForTable = [...latestData].reverse();
         setTableData(reversedForTable);
-        setLastSync(new Date().toLocaleTimeString("tr-TR"));
+        const lastEntry = latestData[latestData.length - 1];
+        setLastSync(
+          lastEntry
+            ? new Date(lastEntry.reading_timestamp).toLocaleTimeString("tr-TR")
+            : "Veri yok"
+        );
       } catch (error) {
         console.error("Timestamp verileri alınamadı:", error);
       }
     };
 
     fetchTimestamps();
-    const interval = setInterval(fetchTimestamps, 5000);
-    return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (livePacket) {
+      const newData: TimestampData = {
+        id: livePacket.timestamp,
+        reading_timestamp: livePacket.timestamp,
+        ai_soc: String(livePacket.aiPrediction?.predicted_soc ?? ""),
+        sensor_soc: String(livePacket.sensorData?.soc_pct ?? ""),
+      };
+
+      setData((prev) => [...prev.slice(-9), newData]);
+      setTableData((prev) => [newData, ...prev].slice(0, 10));
+
+      setLastSync(
+        new Date(newData.reading_timestamp).toLocaleTimeString("tr-TR")
+      );
+    }
+  }, [livePacket]);
 
   const chartData = useMemo(
     () =>
@@ -64,7 +92,6 @@ export default function DashboardPage() {
       })),
     [data]
   );
-
   if (isLoading) return <h2>Yükleniyor...</h2>;
   return (
     <div className="min-h-screen bg-amber-50/40">
@@ -91,7 +118,12 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        <section className="mt-8 rounded-3xl border border-gray-200 bg-white/95 p-6 shadow-sm">
+        <motion.section
+          className="mt-8 rounded-3xl border border-gray-200 bg-white/95 p-6 shadow-sm"
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: 0.1 }}
+        >
           <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.4em] text-gray-400">
@@ -141,6 +173,9 @@ export default function DashboardPage() {
                   fill="rgba(15, 23, 42, 0.08)"
                   strokeWidth={2.5}
                   dot={false}
+                  isAnimationActive={true}
+                  animationDuration={600}
+                  animationEasing="ease-out"
                 />
                 <Area
                   type="monotone"
@@ -150,13 +185,21 @@ export default function DashboardPage() {
                   fill="rgba(249, 115, 22, 0.15)"
                   strokeWidth={2.5}
                   dot={false}
+                  isAnimationActive={true}
+                  animationDuration={600}
+                  animationEasing="ease-out"
                 />
               </AreaChart>
             </ResponsiveContainer>
           </div>
-        </section>
+        </motion.section>
 
-        <section className="mt-8">
+        <motion.section
+          className="mt-8"
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: 0.25 }}
+        >
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.4em] text-gray-400">
@@ -178,28 +221,34 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {tableData.map((entry, index) => (
-                  <tr
-                    key={entry.id ?? index}
-                    className="border-t border-gray-200 text-sm text-gray-700"
-                  >
-                    <td className="px-6 py-4 font-semibold text-gray-900">
-                      {new Date(entry.reading_timestamp).toLocaleString(
-                        "tr-TR"
-                      )}
-                    </td>
-                    <td className="px-6 py-4 font-semibold text-amber-600">
-                      {entry.ai_soc}
-                    </td>
-                    <td className="px-6 py-4 font-semibold text-slate-900">
-                      {entry.sensor_soc}
-                    </td>
-                  </tr>
-                ))}
+                <AnimatePresence initial={false}>
+                  {tableData.map((entry) => (
+                    <motion.tr
+                      key={entry.reading_timestamp}
+                      className="border-t border-gray-200 text-sm text-gray-700"
+                      variants={rowVariants}
+                      initial="initial"
+                      animate="animate"
+                      layout
+                    >
+                      <td className="px-6 py-4 font-semibold text-gray-900">
+                        {new Date(entry.reading_timestamp).toLocaleString(
+                          "tr-TR"
+                        )}
+                      </td>
+                      <td className="px-6 py-4 font-semibold text-amber-600">
+                        {entry.ai_soc}
+                      </td>
+                      <td className="px-6 py-4 font-semibold text-slate-900">
+                        {entry.sensor_soc}
+                      </td>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
               </tbody>
             </table>
           </div>
-        </section>
+        </motion.section>
       </div>
     </div>
   );

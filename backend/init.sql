@@ -11,5 +11,8 @@ CREATE TABLE IF NOT EXISTS timestamp_ (
     id SERIAL PRIMARY KEY,
     reading_timestamp TIMESTAMP NOT NULL,
     ai_soc DECIMAL(5, 2) NOT NULL,
-    sensor_soc DECIMAL(5, 2) NOT NULL
+    sensor_soc DECIMAL(5, 2) NOT NULL,
+    soh_pct DECIMAL(5, 2),
+    voltage_diff_v DECIMAL(8, 4),
+    max_cell_voltage_v DECIMAL(8, 4)
 );

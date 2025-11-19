@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useUserAuth } from "../hooks/useUserAuth";
 import UserNavbar from "../components/userNavbar";
 import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 
 type TimestampData = {
   id: number;
@@ -26,18 +27,40 @@ export default function TimestampPage() {
         );
         const reversed = [...response.data].reverse();
         setData(limit ? reversed.slice(0, limit) : reversed);
-        setLastUpdated(new Date().toLocaleTimeString("tr-TR"));
+        if (reversed.length > 0) {
+          const latestTimestamp = new Date(
+            reversed[0].reading_timestamp
+          ).toLocaleTimeString("tr-TR");
+          setLastUpdated(latestTimestamp);
+        }
       } catch (error) {
         console.error("Timestamp verileri alınamadı:", error);
       }
     };
 
     fetchTimestamps();
-    const interval = setInterval(fetchTimestamps, 4500);
+    const interval = setInterval(fetchTimestamps, 5000);
     return () => clearInterval(interval);
   }, [limit]);
 
-  if (isLoading) return <h2>Yükleniyor...</h2>;
+  const itemVariants = {
+    initial: { opacity: 0, height: 0 },
+    animate: {
+      opacity: 1,
+      height: "auto",
+      transition: {
+        duration: 0.4,
+        opacity: { duration: 0.3 },
+      },
+    },
+    exit: { opacity: 0, height: 0, transition: { duration: 0.3 } },
+  };
+
+  if (isLoading)
+    return (
+      <h2 className="p-8 text-center text-2xl font-bold">Yükleniyor...</h2>
+    );
+
   return (
     <div className="min-h-screen bg-amber-50/40">
       <UserNavbar userName={userName} userEmail={userEmail} />
@@ -93,24 +116,31 @@ export default function TimestampPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.map((entry, index) => (
-                  <tr
-                    key={entry.id ?? index}
-                    className="border-t border-gray-200 text-sm text-gray-700"
-                  >
-                    <td className="px-6 py-4 font-semibold text-gray-900">
-                      {new Date(entry.reading_timestamp).toLocaleString(
-                        "tr-TR"
-                      )}
-                    </td>
-                    <td className="px-6 py-4 font-semibold text-amber-600">
-                      {entry.ai_soc}
-                    </td>
-                    <td className="px-6 py-4 font-semibold text-slate-900">
-                      {entry.sensor_soc}
-                    </td>
-                  </tr>
-                ))}
+                <AnimatePresence initial={false} mode="sync">
+                  {data.map((entry) => (
+                    <motion.tr
+                      key={entry.id}
+                      className="border-t border-gray-200 text-sm text-gray-700"
+                      variants={itemVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      layout
+                    >
+                      <td className="px-6 py-4 font-semibold text-gray-900">
+                        {new Date(entry.reading_timestamp).toLocaleTimeString(
+                          "tr-TR"
+                        )}
+                      </td>
+                      <td className="px-6 py-4 font-semibold text-amber-600">
+                        {entry.ai_soc}
+                      </td>
+                      <td className="px-6 py-4 font-semibold text-slate-900">
+                        {entry.sensor_soc}
+                      </td>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
               </tbody>
             </table>
           </div>

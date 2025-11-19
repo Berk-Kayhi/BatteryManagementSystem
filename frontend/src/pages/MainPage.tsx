@@ -1,19 +1,33 @@
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useUserAuth } from "../hooks/useUserAuth";
 import { useSocketData } from "../hooks/useSocketData";
 import UserNavbar from "../components/userNavbar";
+
+const getTrend = (current?: string, previous?: string) => {
+  const curr = Number(current);
+  const prev = Number(previous);
+
+  const invalid = Number.isNaN(curr) || Number.isNaN(prev);
+  if (invalid) return "stable";
+
+  if (curr > prev) return "up";
+  if (curr < prev) return "down";
+  return "stable";
+};
 
 export default function MainPage() {
   const { userName, userEmail, isLoading } = useUserAuth();
   const rawData = useSocketData("live_data");
   const [rows, setRows] = useState<Record<string, string> | null>(null);
+  const [prevRows, setPrevRows] = useState<Record<string, string> | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   useEffect(() => {
-    if (rawData) {
-      setRows(rawData);
-      setLastUpdated(new Date().toLocaleTimeString("tr-TR"));
-    }
+    if (!rawData) return;
+    setPrevRows(rows);
+    setRows(rawData);
+    setLastUpdated(new Date().toLocaleTimeString("tr-TR"));
   }, [rawData]);
 
   const sensorConfig: Record<
@@ -148,10 +162,19 @@ export default function MainPage() {
                   unit: "",
                 };
 
+                const trend = getTrend(value, prevRows?.[key]);
+                const trendClasses =
+                  trend === "up"
+                    ? "border-green-300 shadow-[0_0_12px_rgba(134,239,172,0.4)]"
+                    : trend === "down"
+                    ? "border-red-300 shadow-[0_0_12px_rgba(252,165,165,0.4)]"
+                    : "border-gray-200 shadow-sm";
                 return (
-                  <div
+                  <motion.div
                     key={key}
-                    className="group rounded-2xl border border-gray-200 bg-white/95 p-5 shadow-sm transition hover:-translate-y-1 hover:border-amber-300 hover:shadow-lg"
+                    className={`group rounded-2xl border bg-white/95 p-5 transition hover:-translate-y-1 ${trendClasses}`}
+                    layout
+                    transition={{ type: "spring", stiffness: 260, damping: 22 }}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
@@ -171,18 +194,52 @@ export default function MainPage() {
                         {config.unit}
                       </span>
                     </div>
-                    <p className="mt-6 text-4xl font-black text-gray-900">
-                      {value}
-                      <span className="ml-2 text-xl font-semibold text-gray-500">
-                        {config.unit}
-                      </span>
-                    </p>
-                    <p className="mt-3 text-xs text-gray-400">
-                      {lastUpdated
-                        ? `Güncelleme: ${lastUpdated}`
-                        : "Veri bekleniyor"}
-                    </p>
-                  </div>
+                    <div className="mt-6 flex items-end gap-3">
+                      <AnimatePresence mode="wait" initial={false}>
+                        <motion.p
+                          key={`${key}-${value}`}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.2 }}
+                          className="text-4xl font-black text-gray-900"
+                        >
+                          {value}
+                          <span className="ml-2 text-xl font-semibold text-gray-500">
+                            {config.unit}
+                          </span>
+                        </motion.p>
+                      </AnimatePresence>
+                      <AnimatePresence mode="wait" initial={false}>
+                        <motion.span
+                          key={`${key}-${trend}`}
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 4 }}
+                          transition={{ duration: 0.2 }}
+                          className={`flex items-center gap-1 text-sm font-semibold ${
+                            trend === "up"
+                              ? "text-green-600"
+                              : trend === "down"
+                              ? "text-red-600"
+                              : "text-gray-400"
+                          }`}
+                        >
+                          {trend === "up" && (
+                            <>
+                              <i className="ri-arrow-up-s-fill"></i> Artış
+                            </>
+                          )}
+                          {trend === "down" && (
+                            <>
+                              <i className="ri-arrow-down-s-fill"></i> Düşüş
+                            </>
+                          )}
+                          {trend === "stable" && <span>Sabit</span>}
+                        </motion.span>
+                      </AnimatePresence>
+                    </div>
+                  </motion.div>
                 );
               })}
             </div>
