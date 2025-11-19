@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useUserAuth } from "../hooks/useUserAuth";
 import UserNavbar from "../components/userNavbar";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 
 type TimestampData = {
   id: number;
@@ -16,6 +15,7 @@ export default function TimestampPage() {
 
   const [data, setData] = useState<TimestampData[]>([]);
   const [limit, setLimit] = useState<number | null>(20);
+  const [lastUpdated, setLastUpdated] = useState<string>("null");
 
   useEffect(() => {
     const fetchTimestamps = async () => {
@@ -26,6 +26,7 @@ export default function TimestampPage() {
         );
         const reversed = [...response.data].reverse();
         setData(limit ? reversed.slice(0, limit) : reversed);
+        setLastUpdated(new Date().toLocaleTimeString("tr-TR"));
       } catch (error) {
         console.error("Timestamp verileri alınamadı:", error);
       }
@@ -38,70 +39,83 @@ export default function TimestampPage() {
 
   if (isLoading) return <h2>Yükleniyor...</h2>;
   return (
-    <>
-      <UserNavbar userName={userName} userEmail={userEmail}/>
-      <div className="flex mx-50 justify-around">
-        <div className="rounded-full flex bg-[#f8f9fa] border w-fit border-[#ced9e9] gap-5 mt-20 p-1">
-          <button
-            onClick={() => setLimit(20)}
-            className={`cursor-pointer py-2 rounded-full px-20 ${
-              limit === 20 ? "bg-[#FF6C00] text-black" : "hover:bg-gray-200 text-black"
-            }`}
-          >
-            Son 20
-          </button>
-          <button
-            onClick={() => setLimit(50)}
-            className={`cursor-pointer py-2 rounded-full px-20 ${
-              limit === 50 ? "bg-[#FF6C00] text-black" : "hover:bg-gray-200 text-black"
-            }`}
-          >
-            Son 50
-          </button>
-          <button
-            onClick={() => setLimit(null)}
-            className={`cursor-pointer py-2 rounded-full px-20 ${
-              limit === null ? "bg-[#FF6C00] text-black" : "hover:bg-gray-200 text-black"
-            }`}
-          >
-            Tüm veriler
-          </button>
-        </div>
-      </div>
-      <div className="px-4 py-3 md:w-9/12 mx-auto mt-5 w-full">
-        <div className="flex overflow-hidden rounded-lg border border-[#ced9e9] bg-[#FFFFFF]">
-          <table className="w-full flex-1">
-            <thead className="bg-[#f8f9fa]">
-              <tr>
-                <th className="px-4 py-3 text-left text-[#212529] text-sm font-medium leading-normal w-1/3">
-                  Timestamp
-                </th>
-                <th className="px-4 py-3 text-left text-[#212529] text-sm font-medium leading-normal w-1/3">
-                  AI SOC
-                </th>
-                <th className="px-4 py-3 text-left text-[#212529] text-sm font-medium leading-normal w-1/3">
-                  Sensor SOC
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((entry, index) => (
-                <tr key={index} className="border-t border-t-[#ced9e9]">
-                  <td className="h-[60px] px-4 py-2 text-[#212529] text-center md:text-left text-sm font-normal leading-normal">
-                    {new Date(entry.reading_timestamp).toLocaleString("tr-TR")}
-                  </td>
-                  <td className="h-[60px] px-4 py-2 text-[#FF6C00] text-sm font-normal leading-normal">
-                    {entry.ai_soc}
-                  </td>
-                  <td className="h-[60px] px-4 py-2 text-[#00529B] text-sm font-normal leading-normal">
-                    {entry.sensor_soc}
-                  </td>
-                </tr>
+    <div className="min-h-screen bg-amber-50/40">
+      <UserNavbar userName={userName} userEmail={userEmail} />
+      <div className="mx-auto max-w-7xl px-6 pb-16 pt-24">
+        <header className="flex flex-col gap-4 border-b border-gray-200 pb-6 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.4em] text-gray-400">
+              Timestamp Kayıtları
+            </p>
+            <h1 className="text-3xl font-black text-gray-900">
+              SOC Geçmiş Kayıtlar
+            </h1>
+            <p className="mt-1 text-base text-gray-600">
+              En yeni zaman damgası kayıtlarını filtreleyerek görüntüle.
+            </p>
+          </div>
+          <div className="inline-flex items-center gap-3 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700">
+            <i className="ri-time-line text-lg text-amber-600"></i>
+            <span>Son güncelleme: {lastUpdated}</span>
+          </div>
+        </header>
+
+        <section className="mt-8">
+          <div className="rounded-full border border-gray-200 bg-white px-2 py-1">
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: "Son 20", value: 20 },
+                { label: "Son 50", value: 50 },
+                { label: "Tüm veriler", value: null },
+              ].map((option) => (
+                <button
+                  key={option.label}
+                  onClick={() => setLimit(option.value)}
+                  className={`flex-1 rounded-full px-6 py-2 text-sm font-semibold transition ${
+                    limit === option.value
+                      ? "bg-amber-500 text-white shadow"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  {option.label}
+                </button>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </div>
+          </div>
+
+          <div className="mt-6 overflow-hidden rounded-3xl border border-gray-200 bg-white/95 shadow-sm">
+            <table className="w-full">
+              <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+                <tr>
+                  <th className="px-6 py-4">Timestamp</th>
+                  <th className="px-6 py-4">AI SOC</th>
+                  <th className="px-6 py-4">Sensör SOC</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((entry, index) => (
+                  <tr
+                    key={entry.id ?? index}
+                    className="border-t border-gray-200 text-sm text-gray-700"
+                  >
+                    <td className="px-6 py-4 font-semibold text-gray-900">
+                      {new Date(entry.reading_timestamp).toLocaleString(
+                        "tr-TR"
+                      )}
+                    </td>
+                    <td className="px-6 py-4 font-semibold text-amber-600">
+                      {entry.ai_soc}
+                    </td>
+                    <td className="px-6 py-4 font-semibold text-slate-900">
+                      {entry.sensor_soc}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
-    </>
+    </div>
   );
 }
