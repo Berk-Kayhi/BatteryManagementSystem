@@ -7,10 +7,12 @@ export default function MainPage() {
   const { userName, userEmail, isLoading } = useUserAuth();
   const rawData = useSocketData("live_data");
   const [rows, setRows] = useState<Record<string, string> | null>(null);
-  
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+
   useEffect(() => {
     if (rawData) {
       setRows(rawData);
+      setLastUpdated(new Date().toLocaleTimeString("tr-TR"));
     }
   }, [rawData]);
 
@@ -90,50 +92,115 @@ export default function MainPage() {
 
   if (isLoading) return <h2>Yükleniyor...</h2>;
   return (
-    <div className="flex h-screen font-sans overflow-auto">
+    <div className="min-h-screen bg-amber-50/40">
       <UserNavbar userName={userName} userEmail={userEmail} />
-      <div className="flex flex-1 p-6 justify-center">
-        <div className="flex flex-col items-center w-full pt-20">
+
+      <div className="mx-auto flex max-w-7xl flex-1 flex-col px-6 pb-16 pt-24">
+        <div className="flex flex-col gap-4 border-b border-gray-200 pb-6 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.4em] text-gray-400">
+              Canlı Sensör Verisi
+            </p>
+            <h1 className="text-3xl font-black text-gray-900">
+              Batarya Telemetri Ekranı
+            </h1>
+            <p className="mt-1 text-base text-gray-600">
+              Tüm kritik parametrelerin sade bir listesi; değişim olduğunda
+              kartlar anında güncellenir.
+            </p>
+          </div>
+
+          <div className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700">
+            <div className="flex items-center gap-2">
+              <i className="ri-time-line text-lg text-amber-600"></i>
+              <span>Son güncelleme: {lastUpdated ?? "Bekleniyor"}</span>
+            </div>
+            <span className="hidden h-5 w-px bg-gray-200 md:block"></span>
+            <div className="flex items-center gap-2">
+              <i className="ri-dashboard-3-line text-lg text-amber-600"></i>
+              <span>
+                {rows
+                  ? `${Object.keys(rows).length} sensör aktif`
+                  : "Sensör bekleniyor"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <section className="mt-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.4em] text-gray-400">
+                Sensör Kartları
+              </p>
+              <h2 className="text-2xl font-black text-gray-900">
+                Tüm Canlı Değerler
+              </h2>
+            </div>
+          </div>
+
           {rows ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full">
+            <div className="mt-6 grid w-full grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {Object.entries(rows).map(([key, value]) => {
                 const config = sensorConfig[key] || {
                   label: key,
                   icon: "ri-line-chart-line",
                   unit: "",
                 };
+
                 return (
                   <div
                     key={key}
-                    className="rounded-xl bg-white border-4 border-gray-900 p-6"
+                    className="group rounded-2xl border border-gray-200 bg-white/95 p-5 shadow-sm transition hover:-translate-y-1 hover:border-amber-300 hover:shadow-lg"
                   >
-                    <div className="flex items-center gap-3 mb-3">
-                      <i
-                        className={`${config.icon} text-3xl text-amber-600`}
-                      ></i>
-                      <p className="font-bold text-gray-900 text-base">
-                        {config.label}
-                      </p>
-                    </div>
-                    <p className="text-4xl font-extrabold text-gray-800">
-                      {value}{" "}
-                      <span className="text-2xl text-gray-600">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50 text-2xl text-amber-600">
+                          <i className={config.icon}></i>
+                        </span>
+                        <div>
+                          <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+                            {config.label}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {key.replace(/_/g, " ")}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="rounded-full border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-500">
                         {config.unit}
                       </span>
+                    </div>
+                    <p className="mt-6 text-4xl font-black text-gray-900">
+                      {value}
+                      <span className="ml-2 text-xl font-semibold text-gray-500">
+                        {config.unit}
+                      </span>
+                    </p>
+                    <p className="mt-3 text-xs text-gray-400">
+                      {lastUpdated
+                        ? `Güncelleme: ${lastUpdated}`
+                        : "Veri bekleniyor"}
                     </p>
                   </div>
                 );
               })}
             </div>
           ) : (
-            <div className="rounded-xl bg-white border-4 border-gray-900 p-8">
-              <div className="flex items-center gap-3 text-gray-600">
-                <i className="ri-radar-line text-3xl animate-pulse"></i>
-                <p className="text-xl font-semibold">Veri Bekleniyor...</p>
+            <div className="mt-10 rounded-3xl border-2 border-dashed border-gray-300 bg-white/60 p-10 text-center shadow-inner">
+              <div className="mx-auto flex w-max items-center gap-3 rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-amber-700">
+                <i className="ri-radar-line text-2xl animate-pulse"></i>
+                <span className="text-lg font-semibold">
+                  Sensör verisi bekleniyor...
+                </span>
               </div>
+              <p className="mt-3 text-sm text-gray-500">
+                MQTT hattı hazır, her 5 saniyede kontrol edilerek yeni paket
+                geldiğinde kartlar dolacak.
+              </p>
             </div>
           )}
-        </div>
+        </section>
       </div>
     </div>
   );
