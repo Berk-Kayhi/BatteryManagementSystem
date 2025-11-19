@@ -56,26 +56,30 @@ export default function DetailedGraphs() {
 
   if (isLoading) return <h2>Yükleniyor...</h2>;
   return (
-    <div className="min-h-screen mt-20">
+    <div className="min-h-screen bg-amber-50/40">
       <UserNavbar userName={userName} userEmail={userEmail} />
-      <div className="max-w-7xl mx-auto p-6 lg:p-10">
-        <div className="flex flex-col md:flex-row items-center justify-between mb-8 pb-4 border-b border-gray-200">
-          <div className="text-3xl sm:text-4xl font-extrabold text-gray-800 tracking-tight mb-2 md:mb-0">
-            Batarya Sistem Durumu
+      <div className="mx-auto max-w-7xl px-6 pb-16 pt-24">
+        <header className="flex flex-col gap-4 border-b border-gray-200 pb-6 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.4em] text-gray-400">
+              Batarya Sistem Durumu
+            </p>
+            <h1 className="text-3xl font-black text-gray-900">
+              Grafik ve Sağlık Analizi
+            </h1>
+            <p className="mt-1 text-base text-gray-600">
+              SOC, SOH ve gerilim düşüşünü canlı veriden okunur grafiklerle
+              takip edin.
+            </p>
           </div>
-          <div className="flex items-center text-sm font-medium text-gray-500">
-            <div className="mx-1 flex items-center">
-              <p className="ri-time-line mx-1"></p>
-              Son Güncelleme Zamanı:{" "}
-              <span className="font-semibold mx-1 text-gray-700">
-                {lastUpdateTime}
-              </span>
-            </div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700">
+            <i className="ri-time-line text-lg text-amber-600"></i>
+            <span>Son güncelleme: {lastUpdateTime}</span>
           </div>
-        </div>
+        </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center min-h-[300px]">
+        <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="flex min-h-[300px] flex-col items-center rounded-2xl border border-gray-200 bg-white/95 p-6 shadow-sm">
             <h2 className="text-xl font-semibold mb-4 text-center text-gray-700">
               Batarya Sağlık Durumu (SOH)
             </h2>
@@ -127,7 +131,7 @@ export default function DetailedGraphs() {
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center min-h-[300px]">
+          <div className="flex min-h-[300px] flex-col items-center rounded-2xl border border-gray-200 bg-white/95 p-6 shadow-sm">
             <h2 className="text-xl font-semibold mb-4 text-center text-gray-700">
               Gerilim Düşüş Yüzdesi
             </h2>
@@ -178,7 +182,7 @@ export default function DetailedGraphs() {
               </RadialBarChart>
             </ResponsiveContainer>
           </div>
-          <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center min-h-[300px]">
+          <div className="flex min-h-[300px] flex-col items-center rounded-2xl border border-gray-200 bg-white/95 p-6 shadow-sm">
             <h2 className="text-xl font-semibold mb-4 text-center text-gray-700">
               Şarj Durumu (SOC)
             </h2>
