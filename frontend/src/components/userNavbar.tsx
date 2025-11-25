@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/authContext";
 import axios from "axios";
 
 type UserNavbarProps = {
@@ -10,6 +11,7 @@ type UserNavbarProps = {
 
 export default function UserNavbar({ userName, userEmail }: UserNavbarProps) {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [showPopup, setShowPopup] = useState(false);
   const [showProfileDetails, setProfileDetails] = useState(false);
   const userInitial = useMemo(
@@ -55,18 +57,14 @@ export default function UserNavbar({ userName, userEmail }: UserNavbarProps) {
     );
     if (!confirmed) return;
     try {
-      await axios.post(
-        "http://localhost:3001/auth/logout",
-        {},
-        { withCredentials: true }
-      );
+      await logout();
       navigate("/login");
     } catch (error) {
       console.error("Çıkış yaparken bir hata oluştu:", error);
       alert("Çıkış yaparken bir hata oluştu. Lütfen tekrar deneyin.");
     }
   };
-  
+
   const handleDeleteAccount = async () => {
     const confirmed1 = window.confirm(
       "Hesabınızı silmek istediğinizden emin misiniz?"

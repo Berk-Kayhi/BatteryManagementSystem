@@ -1,15 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useAuth } from "../context/authContext";
 
 const inputStyles =
   "w-full rounded-2xl border border-gray-200 bg-white/80 px-4 py-3 text-base text-gray-900 placeholder-gray-500 transition focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
+
+  // Eğer kullanıcı zaten giriş yapmışsa main'e yönlendir
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/main", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -19,20 +27,11 @@ export default function LoginPage() {
       return;
     }
     try {
-      const response = await axios.post(
-        "http://localhost:3001/auth/login",
-        {
-          email,
-          password,
-          remember,
-        },
-        { withCredentials: true }
-      );
-      alert(response.data.message);
+      await login(email, password);
       navigate("/main");
     } catch (error: any) {
       if (error.response) {
-        alert(error.response.data.error);
+        alert(error.response.data.error || "Giriş başarısız!");
       } else {
         alert("Bilinmeyen bir hata oluştu!");
       }
