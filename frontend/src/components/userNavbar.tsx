@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 type UserNavbarProps = {
   userName: string;
@@ -20,28 +21,28 @@ export default function UserNavbar({ userName, userEmail }: UserNavbarProps) {
   );
   const primaryActions = [
     {
-      label: "Canlı Sensör Verisi",
-      icon: "ri-bar-chart-line",
-      description: "Gerçek zamanlı ölçüm akışı",
-      path: "/main",
+      label: "Şebeke Haritası",
+      icon: "ri-node-tree",
+      description: "Network topolojisi ve ESS bağlantıları",
+      path: "/network",
     },
     {
-      label: "Batarya Sistem Durumu",
-      icon: "ri-numbers-line",
-      description: "Genel sağlık durumu",
-      path: "/graph",
+      label: "Sistem Durumu",
+      icon: "ri-dashboard-line",
+      description: "Batarya sağlık ve durum bilgisi",
+      path: "/status",
     },
     {
-      label: "Grafik Ekranı (AI)",
-      icon: "ri-brain-line",
-      description: "Tahmin & analiz paneli",
+      label: "Tahmin Paneli",
+      icon: "ri-line-chart-line",
+      description: "AI destekli analiz ve tahminler",
       path: "/predictions",
     },
     {
-      label: "Timestamp",
-      icon: "ri-time-line",
-      description: "Zaman damgası kaydı",
-      path: "/timestamp",
+      label: "Geçmiş Kayıtlar",
+      icon: "ri-history-line",
+      description: "Zaman damgalı veri geçmişi",
+      path: "/history",
     },
   ];
   const handleShowPopup = () => {
@@ -58,10 +59,11 @@ export default function UserNavbar({ userName, userEmail }: UserNavbarProps) {
     if (!confirmed) return;
     try {
       await logout();
+      toast.success("Çıkış başarılı!");
       navigate("/login");
     } catch (error) {
       console.error("Çıkış yaparken bir hata oluştu:", error);
-      alert("Çıkış yaparken bir hata oluştu. Lütfen tekrar deneyin.");
+      toast.error("Çıkış yaparken bir hata oluştu. Lütfen tekrar deneyin.");
     }
   };
 
@@ -74,7 +76,6 @@ export default function UserNavbar({ userName, userEmail }: UserNavbarProps) {
     }
     const confirmed2 = window.confirm(
       "Hesabınızı sildiğiniz zaman verileriniz tamamen silinecektir. Bu işlem geri alınamaz. Onaylıyor musunuz?"
-      //güvenlik amacıyla şifre istenilebilir
     );
     if (!confirmed2) {
       return;
@@ -83,11 +84,11 @@ export default function UserNavbar({ userName, userEmail }: UserNavbarProps) {
       await axios.delete("http://localhost:3001/auth/delete", {
         withCredentials: true,
       });
-      navigate("/login");
-      alert("Hesabınız başarılı bir şekilde silindi.");
+      toast.success("Hesabınız başarılı bir şekilde silindi.");
+      setTimeout(() => navigate("/login"), 1500);
     } catch (error) {
       console.error("Hesabınız silinemedi:", error);
-      alert("Hesabınız silinemedi. Lütfen tekrar deneyin.");
+      toast.error("Hesabınız silinemedi. Lütfen tekrar deneyin.");
     }
   };
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
+import toast, { Toaster } from "react-hot-toast";
 
 const inputStyles =
   "w-full rounded-2xl border border-gray-200 bg-white/80 px-4 py-3 text-base text-gray-900 placeholder-gray-500 transition focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40";
@@ -12,10 +13,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
 
-  // Eğer kullanıcı zaten giriş yapmışsa main'e yönlendir
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/main", { replace: true });
+      navigate("/network", { replace: true });
     }
   }, [isAuthenticated, navigate]);
 
@@ -23,23 +23,25 @@ export default function LoginPage() {
     e.preventDefault();
 
     if (!email || !password) {
-      alert("Tüm alanlar zorunludur!");
+      toast.error("Tüm alanlar zorunludur!");
       return;
     }
     try {
       await login(email, password);
-      navigate("/main");
+      toast.success("Giriş başarılı! Yönlendiriliyorsunuz...");
+      setTimeout(() => navigate("/network"), 1000);
     } catch (error: any) {
       if (error.response) {
-        alert(error.response.data.error || "Giriş başarısız!");
+        toast.error(error.response.data.error || "Giriş başarısız!");
       } else {
-        alert("Bilinmeyen bir hata oluştu!");
+        toast.error("Bilinmeyen bir hata oluştu!");
       }
     }
   };
 
   return (
     <div className="min-h-screen bg-linear-to-br from-amber-50 via-white to-amber-100">
+      <Toaster position="top-right" />
       <div className="flex min-h-screen flex-col lg:flex-row">
         <div className="flex flex-1 items-center justify-center px-8 py-12 lg:px-12">
           <div className="p-12 border-3 shadow-2xl rounded-3xl">
