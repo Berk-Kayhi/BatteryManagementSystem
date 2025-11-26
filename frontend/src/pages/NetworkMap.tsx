@@ -16,28 +16,60 @@ import { useUserAuth } from '../hooks/useUserAuth';
 import UserNavbar from '../components/userNavbar';
 
 const initialNodes = [
-    { id: 'TK1', position: { x: 150, y: 80 }, data: { label: 'TK1' }, style: { background: '#fbbf24', color: '#78350f', border: '2px solid #f59e0b', borderRadius: '8px', padding: '10px', fontWeight: 'bold' } },
-    { id: 'TK2', position: { x: 420, y: 180 }, data: { label: 'TK2' }, style: { background: '#fbbf24', color: '#78350f', border: '2px solid #f59e0b', borderRadius: '8px', padding: '10px', fontWeight: 'bold' } },
-    { id: 'TK3', position: { x: 280, y: 320 }, data: { label: 'TK3' }, style: { background: '#fbbf24', color: '#78350f', border: '2px solid #f59e0b', borderRadius: '8px', padding: '10px', fontWeight: 'bold' } },
-    { id: 'AST1', position: { x: 550, y: 90 }, data: { label: 'AST1' }, style: { background: '#60a5fa', color: '#1e3a8a', border: '2px solid #3b82f6', borderRadius: '8px', padding: '10px', fontWeight: 'bold' } },
-    { id: 'AST2', position: { x: 100, y: 280 }, data: { label: 'AST2' }, style: { background: '#34d399', color: '#064e3b', border: '2px solid #10b981', borderRadius: '8px', padding: '10px', fontWeight: 'bold' } },
-    { id: 'AST3', position: { x: 480, y: 380 }, data: { label: 'AST3' }, style: { background: '#60a5fa', color: '#1e3a8a', border: '2px solid #3b82f6', borderRadius: '8px', padding: '10px', fontWeight: 'bold' } },
-    { id: 'AST5', position: { x: 350, y: 450 }, data: { label: 'AST5' }, style: { background: '#60a5fa', color: '#1e3a8a', border: '2px solid #3b82f6', borderRadius: '8px', padding: '10px', fontWeight: 'bold' } },
-    { id: 'AST6', position: { x: 200, y: 150 }, data: { label: 'AST6' }, style: { background: '#60a5fa', color: '#1e3a8a', border: '2px solid #3b82f6', borderRadius: '8px', padding: '10px', fontWeight: 'bold' } },
+    { id: 'TK1', position: { x: 180, y: 200 }, data: { label: 'TK1' }, style: { background: '#60a5fa', color: '#1e3a8a', border: '2px solid #3b82f6', borderRadius: '8px', padding: '3px', width: '50px', fontWeight: 'bold' } },
+    { id: 'TK2', position: { x: 210, y: 160 }, data: { label: 'TK2' }, style: { background: '#60a5fa', color: '#1e3a8a', border: '2px solid #3b82f6', borderRadius: '8px', padding: '3px', width: '50px', fontWeight: 'bold' } },
+    { id: 'line-start', position: { x: 50, y: 200 }, data: { label: '' }, style: { width: 1, height: 1, padding: 0, border: 'none', background: 'transparent' } },
+    { id: 'line-quarter', position: { x: 187.5, y: 275 }, data: { label: '' }, style: { width: 1, height: 1, padding: 0, border: 'none', background: 'transparent' } },
+    { id: 'line-2.5', position: { x: 480, y: 450 }, data: { label: '' }, style: { width: 1, height: 1, padding: 0, border: 'none', background: 'transparent' } },
+    { id: 'line-2', position: { x: 462.5, y: 425 }, data: { label: '' }, style: { width: 1, height: 1, padding: 0, border: 'none', background: 'transparent' } },
+    { id: 'line-end', position: { x: 600, y: 500 }, data: { label: '' }, style: { width: 1, height: 1, padding: 0, border: 'none', background: 'transparent' } },
+    { id: 'AST1', position: { x: 445, y: 470 }, data: { label: 'AST1' }, style: { background: '#fa6060ff', color: '#8a1e1eff', border: '2px solid #f63b3bff', borderRadius: '8px', padding: '3px', width: '50px', fontWeight: 'bold' } },
+    { id: 'line-3', position: { x: 500, y: 520 }, data: { label: '' }, style: { width: 1, height: 1, padding: 0, border: 'none', background: 'transparent' } },
+    { id: 'line-4', position: { x: 520, y: 540 }, data: { label: '' }, style: { width: 1, height: 1, padding: 0, border: 'none', background: 'transparent' } },
+    { id: 'AST2', position: { x: 480, y: 565 }, data: { label: 'AST2' }, style: { background: '#fa6060ff', color: '#8a1e1eff', border: '2px solid #f63b3bff', borderRadius: '8px', padding: '3px', width: '50px', fontWeight: 'bold' } },
+    { id: 'line-5', position: { x: 435, y: 410 }, data: { label: '' }, style: { width: 1, height: 1, padding: 0, border: 'none', background: 'transparent' } },
+    { id: 'line-6', position: { x: 455, y: 385 }, data: { label: '' }, style: { width: 1, height: 1, padding: 0, border: 'none', background: 'transparent' } },
+    { id: 'line-7', position: { x: 475, y: 385 }, data: { label: '' }, style: { width: 1, height: 1, padding: 0, border: 'none', background: 'transparent' } },
+    { id: 'line-8', position: { x: 540, y: 305 }, data: { label: '' }, style: { width: 1, height: 1, padding: 0, border: 'none', background: 'transparent' } },
+    { id: 'AST3', position: { x: 500, y: 255 }, data: { label: 'AST3' }, style: { background: '#fa6060ff', color: '#8a1e1eff', border: '2px solid #f63b3bff', borderRadius: '8px', padding: '3px', width: '50px', fontWeight: 'bold' } },
+    { id: 'AST4', position: { x: 400, y: 245 }, data: { label: 'AST4' }, style: { background: '#fa6060ff', color: '#8a1e1eff', border: '2px solid #f63b3bff', borderRadius: '8px', padding: '3px', width: '50px', fontWeight: 'bold' } },
+    { id: 'AST5', position: { x: 340, y: 185 }, data: { label: 'AST5' }, style: { background: '#fa6060ff', color: '#8a1e1eff', border: '2px solid #f63b3bff', borderRadius: '8px', padding: '3px', width: '50px', fontWeight: 'bold' } },
+    { id: 'AST6', position: { x: 280, y: 240 }, data: { label: 'AST6' }, style: { background: '#fa6060ff', color: '#8a1e1eff', border: '2px solid #f63b3bff', borderRadius: '8px', padding: '3px', width: '50px', fontWeight: 'bold' } },
+
+
+
+
 ];
 
 const initialEdges = [
-    { id: 'TK1-TK2', source: 'TK1', target: 'TK2', animated: true },
-    { id: 'TK2-TK3', source: 'TK2', target: 'TK3', animated: true },
-    { id: 'AST1-AST2', source: 'AST1', target: 'AST2', animated: true },
-    { id: 'AST2-AST3', source: 'AST2', target: 'AST3', animated: true },
-    { id: 'TK1-AST1', source: 'TK1', target: 'AST1', animated: true },
-    { id: 'TK2-AST2', source: 'TK2', target: 'AST2', animated: true },
-    { id: 'TK3-AST3', source: 'TK3', target: 'AST3', animated: true },
-    { id: 'AST3-AST5', source: 'AST3', target: 'AST5', animated: true },
-    { id: 'AST6-TK1', source: 'AST6', target: 'TK1', animated: true },
-];
+    { id: 'TK1-TK2', source: 'TK2', target: 'TK1', style: { stroke: '#10b981', strokeWidth: 2 }, animated: true },
+    { id: 'quarter-to-tk1', source: 'TK1', target: 'line-quarter', style: { stroke: '#10b981', strokeWidth: 2 }, animated: true },
+    {
+        id: 'linear-line',
+        source: 'line-start',
+        target: 'line-end',
+        animated: false,
+        style: { stroke: '#10b981', strokeWidth: 3 },
+        type: 'straight',
 
+    },
+    { id: 'line-2-to-line-2.5', source: 'line-2', target: 'line-2.5', style: { stroke: '#10b981', strokeWidth: 2 }, animated: true },
+    { id: 'line-2.5-to-AST1', source: 'line-2.5', target: 'AST1', type: 'straight', style: { stroke: '#10b981', strokeWidth: 2 } },
+    { id: 'AST1-to-line-3', source: 'AST1', target: 'line-3', style: { stroke: '#10b981', strokeWidth: 2 }, animated: true },
+    { id: 'line-3-to-line-4', source: 'line-3', target: 'line-4', type: 'straight', style: { stroke: '#10b981', strokeWidth: 2 }, animated: true },
+    { id: 'line-4-to-AST2', source: 'line-4', target: 'AST2', type: 'straight', style: { stroke: '#10b981', strokeWidth: 2 }, animated: true },
+    { id: 'line-5-to-line-6', source: 'line-5', target: 'line-6', type: 'straight', style: { stroke: '#10b981', strokeWidth: 2 }, animated: true },
+    { id: 'line-6-to-line-7', source: 'line-6', target: 'line-7', type: 'straight', style: { stroke: '#10b981', strokeWidth: 2 }, animated: true },
+    { id: 'line-7-to-line-8', source: 'line-7', target: 'line-8', type: 'straight', style: { stroke: '#10b981', strokeWidth: 2 }, animated: true },
+    { id: 'line-8-to-AST3', source: 'AST3', target: 'line-8', type: 'straight', style: { stroke: '#10b981', strokeWidth: 2 }, animated: true },
+    { id: 'AST4-to-AST3', source: 'AST3', target: 'AST4', style: { stroke: '#10b981', strokeWidth: 2 }, animated: true },
+    { id: 'AST4-to-AST5', source: 'AST5', target: 'AST4', style: { stroke: '#10b981', strokeWidth: 2 }, animated: true },
+    { id: 'AST5-to-AST6', source: 'AST5', target: 'AST6', style: { stroke: '#10b981', strokeWidth: 2 }, animated: true, type: 'straight', },
+
+
+
+
+];
 const ast2EssList = [
     { id: 'ESS-1', name: 'Energy Storage System 1', status: 'Aktif' },
 ];
@@ -93,11 +125,6 @@ export default function NetworkMap() {
                     </div>
                     <div className="inline-flex items-center gap-3 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700">
                         <div className="flex items-center gap-2">
-                            <i className="ri-signal-tower-line text-lg text-amber-600"></i>
-                            <span>{nodes.length} Aktif Node</span>
-                        </div>
-                        <span className="hidden h-5 w-px bg-gray-200 md:block"></span>
-                        <div className="flex items-center gap-2">
                             <span className="relative flex h-3 w-3">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
@@ -110,28 +137,17 @@ export default function NetworkMap() {
                 <div className="relative w-full flex-1 overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
                     <Toaster
                         position="top-right"
-                        toastOptions={{
-                            style: {
-                                background: '#fff',
-                                color: '#333',
-                                padding: '16px',
-                                borderRadius: '12px',
-                                border: '2px solid #f53a0bff',
-                                fontWeight: 'bold',
-                            },
-                        }}
                     />
                     <ReactFlow
                         nodes={nodes}
                         edges={edges}
                         onNodesChange={onNodesChange}
                         onNodeClick={onNodeClick}
-                        nodesDraggable={true}
+                        nodesDraggable={false}
                         nodesConnectable={false}
                         edgesFocusable={false}
                         elementsSelectable={false}
                         fitView={true}
-                        fitViewOptions={{ padding: 0.2 }}
                     >
                         <Controls />
                         <MiniMap />
