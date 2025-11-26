@@ -59,14 +59,12 @@ export default function DetailedGraphs() {
 
           const formattedHistory = dataList.map((item: any) => ({
             ...item,
-            current_a: item.current_a ? parseFloat(item.current_a) : 0,
-            power_kw: item.power_kw ? parseFloat(item.power_kw) : 0,
-            voltage_v: item.voltage_v ? parseFloat(item.voltage_v) : 0,
+            soc_pct: item.sensor_soc, // Normalize sensor_soc to soc_pct for consistency
           })).reverse();
-          
+
 
           const latest = formattedHistory[formattedHistory.length - 1] || {};
-          
+
           if (latest.soh_pct !== undefined) {
             setBatteryHealthData([
               { name: "SOH", value: parseFloat(latest.soh_pct) },
@@ -82,18 +80,18 @@ export default function DetailedGraphs() {
             setVoltageDropData([{ name: "DROP", value: calculatedDrop }]);
           }
 
-          if (latest.sensor_soc !== undefined) {
+          if (latest.soc_pct !== undefined) {
             setStateOfChargeData([
-              { name: "SOC", value: parseFloat(latest.sensor_soc) },
+              { name: "SOC", value: parseFloat(latest.soc_pct) },
             ]);
           }
-           
-           if(latest.reading_timestamp) {
-               const date = new Date(latest.reading_timestamp);
-               setLastUpdateTime(date.toLocaleTimeString("tr-TR"));
-           }
-           
-           setHistoryData(formattedHistory);
+
+          if (latest.reading_timestamp) {
+            const date = new Date(latest.reading_timestamp);
+            setLastUpdateTime(date.toLocaleTimeString("tr-TR"));
+          }
+
+          setHistoryData(formattedHistory);
         }
       } catch (error) {
         console.error("Error fetching initial data:", error);
@@ -108,9 +106,6 @@ export default function DetailedGraphs() {
 
     const normalizedData = {
       ...liveData,
-      current_a: liveData.current_A !== undefined ? parseFloat(liveData.current_A) : 0,
-      power_kw: liveData.power_kW !== undefined ? parseFloat(liveData.power_kW) : 0,
-      voltage_v: liveData.voltage_V !== undefined ? parseFloat(liveData.voltage_V) : 0,
       reading_timestamp: new Date().toISOString(),
     };
 
@@ -324,10 +319,10 @@ export default function DetailedGraphs() {
             <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.4em] text-gray-400">
-                  Akım Grafiği
+                  SOH Grafiği
                 </p>
                 <h2 className="text-2xl font-black text-gray-900">
-                  Akım (A)
+                  SOH (%)
                 </h2>
               </div>
               <div className="rounded-full border border-gray-200 px-4 py-2 text-sm text-gray-600">
@@ -357,8 +352,8 @@ export default function DetailedGraphs() {
                   />
                   <Line
                     type="monotone"
-                    dataKey="current_a"
-                    stroke="#8884d8"
+                    dataKey="soh_pct"
+                    stroke="#008000"
                     strokeWidth={2.5}
                     dot={false}
                     isAnimationActive={true}
@@ -375,10 +370,10 @@ export default function DetailedGraphs() {
             <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.4em] text-gray-400">
-                  Güç Grafiği
+                  SOC Grafiği
                 </p>
                 <h2 className="text-2xl font-black text-gray-900">
-                  Güç (kW)
+                  SOC (%)
                 </h2>
               </div>
               <div className="rounded-full border border-gray-200 px-4 py-2 text-sm text-gray-600">
@@ -408,59 +403,8 @@ export default function DetailedGraphs() {
                   />
                   <Line
                     type="monotone"
-                    dataKey="power_kw"
-                    stroke="#82ca9d"
-                    strokeWidth={2.5}
-                    dot={false}
-                    isAnimationActive={true}
-                    animationDuration={600}
-                    animationEasing="ease-out"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-
-          <div className="rounded-3xl border border-gray-200 bg-white/95 p-6 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.4em] text-gray-400">
-                  Gerilim Grafiği
-                </p>
-                <h2 className="text-2xl font-black text-gray-900">
-                  Gerilim (V)
-                </h2>
-              </div>
-              <div className="rounded-full border border-gray-200 px-4 py-2 text-sm text-gray-600">
-                Son 10 veri kaydı
-              </div>
-            </div>
-            <div className="h-96">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={historyData}
-                  margin={{ top: 10, right: 20, left: -10, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e6ecf4" />
-                  <XAxis
-                    dataKey="reading_timestamp"
-                    tickFormatter={formatTimeTick}
-                    tick={{ fill: "#334155", fontSize: 12 }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    domain={["dataMin", "dataMax"]}
-                    padding={{ top: 20, bottom: 20 }}
-                    tick={{ fill: "#334155", fontSize: 12 }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="voltage_v"
-                    stroke="#ffc658"
+                    dataKey="soc_pct"
+                    stroke="#734a12"
                     strokeWidth={2.5}
                     dot={false}
                     isAnimationActive={true}

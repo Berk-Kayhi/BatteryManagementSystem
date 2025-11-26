@@ -8,7 +8,8 @@ import {
     type Node,
     Controls,
     Background,
-    BackgroundVariant
+    BackgroundVariant,
+    MiniMap
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useUserAuth } from '../hooks/useUserAuth';
@@ -133,6 +134,7 @@ export default function NetworkMap() {
                         fitViewOptions={{ padding: 0.2 }}
                     >
                         <Controls />
+                        <MiniMap />
                         <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
                     </ReactFlow>
                 </div>
