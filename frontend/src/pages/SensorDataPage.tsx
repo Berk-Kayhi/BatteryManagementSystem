@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import {
   ResponsiveContainer,
   LineChart,
@@ -13,6 +12,7 @@ import {
 import { useUserAuth } from "../hooks/useUserAuth";
 import { useSocketData } from "../hooks/useSocketData";
 import UserNavbar from "../components/userNavbar";
+import { dataApi } from "../services/api";
 
 const getTrend = (current?: string, previous?: string) => {
   const curr = Number(current);
@@ -52,8 +52,7 @@ export default function MainPage() {
   useEffect(() => {
     const fetchHistoryData = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/data/latest");
-        const data = response.data.reverse();
+        const data = (await dataApi.getLatest()).reverse();
         setHistoryData(data);
         setInitialHistoryData(data);
       } catch (error) {
@@ -66,7 +65,7 @@ export default function MainPage() {
   useEffect(() => {
     if (!rawData) return;
 
-    const normalizedData = {
+    const liveHistoryEntry = {
       voltage_v: rawData.voltage_V,
       current_a: rawData.current_A,
       power_kw: rawData.power_kW,
@@ -74,7 +73,7 @@ export default function MainPage() {
     };
 
     setHistoryData((prev) => {
-      const updated = [...prev, normalizedData];
+      const updated = [...prev, liveHistoryEntry];
       return updated.slice(-10);
     });
   }, [rawData]);

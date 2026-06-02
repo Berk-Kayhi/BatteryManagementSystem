@@ -2,8 +2,8 @@ import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
-import axios from "axios";
 import toast from "react-hot-toast";
+import { authApi } from "../services/api";
 
 type UserNavbarProps = {
   userName: string;
@@ -81,9 +81,7 @@ export default function UserNavbar({ userName, userEmail }: UserNavbarProps) {
       return;
     }
     try {
-      await axios.delete("http://localhost:3001/auth/delete", {
-        withCredentials: true,
-      });
+      await authApi.deleteAccount();
       toast.success("Hesabınız başarılı bir şekilde silindi.");
       setTimeout(() => navigate("/login"), 1500);
     } catch (error) {

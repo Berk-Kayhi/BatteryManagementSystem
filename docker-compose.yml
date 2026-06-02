@@ -2,13 +2,10 @@ services:
   db:
     image: postgres:latest
     container_name: bms_db
-    environment:
-      POSTGRES_USER: mqzesh
-      POSTGRES_PASSWORD: mqzesh
-      POSTGRES_DB: bms_database
+    env_file:
+      - .env
     volumes:
-    - postgres_data:/var/lib/postgresql
-    - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql
     ports:
       - "5432:5432"
     networks:
@@ -28,16 +25,8 @@ services:
   backend:
     build: ./backend
     container_name: bms_backend
-    environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_USER: mqzesh
-      DB_PASSWORD: mqzesh
-      DB_NAME: bms_database
-      PORT: 3001
-      JWT_SECRET: 23FbL8enMBFCAo5ucG7dPQhHzmvtTZmLnUq5eUe67hRzm9Iqyr
-      MQTT_HOST: mosquitto
-      MQTT_PORT: 1883
+    env_file:
+      - .env
     ports:
       - "3001:3001"
     depends_on:
@@ -47,15 +36,23 @@ services:
     networks:
       - bms_network
 
+  frontend:
+    build: ./frontend
+    container_name: bms_frontend
+    env_file:
+      - .env
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - bms_network
+
   publisher:
     build: ./data-publisher
     container_name: bms_data_publisher
-    environment:
-      MQTT_HOST: mosquitto
-      MQTT_PORT: 1883
-      MQTT_TOPIC: sensor/data
-      CSV_FILE: /data/data.csv
-      TIMESLEEP: 5
+    env_file:
+      - .env
     volumes:
       - ./csv-data:/data:ro
     depends_on:
@@ -64,13 +61,15 @@ services:
       - bms_network
 
   fake-ai:
-      build:
-        context: ./fake-ai
-      container_name: bms_fake_ai
-      ports:
-        - "8001:8001"
-      networks:
-        - bms_network
+    build:
+      context: ./fake-ai
+    container_name: bms_fake_ai
+    env_file:
+      - .env
+    ports:
+      - "8001:8001"
+    networks:
+      - bms_network
 volumes:
   postgres_data: 
 

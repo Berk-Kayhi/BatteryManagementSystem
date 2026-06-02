@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import { useUserAuth } from "../hooks/useUserAuth";
-import axios from "axios";
 import { useSocketData } from "../hooks/useSocketData";
 import {
   AreaChart,
@@ -13,13 +12,8 @@ import {
 } from "recharts";
 import UserNavbar from "../components/userNavbar";
 import { motion, AnimatePresence } from "framer-motion";
+import { dataApi, type TimestampData } from "../services/api";
 
-type TimestampData = {
-  id: number;
-  reading_timestamp: string;
-  ai_soc: string;
-  sensor_soc: string;
-};
 const rowVariants = {
   initial: { opacity: 0, height: 0 },
   animate: { opacity: 1, height: "auto", transition: { duration: 0.4 } },
@@ -42,12 +36,8 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchTimestamps = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:3001/data/timestamp",
-          { withCredentials: true }
-        );
-
-        const latestData = response.data.slice(-10);
+        const timestamps = await dataApi.getTimestamps();
+        const latestData = timestamps.slice(-10);
         setData(latestData);
         const reversedForTable = [...latestData].reverse();
         setTableData(reversedForTable);

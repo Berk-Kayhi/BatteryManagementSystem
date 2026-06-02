@@ -27,15 +27,11 @@ export default function LoginPage() {
       return;
     }
     try {
-      await login(email, password);
+      await login(email, password, remember);
       toast.success("Giriş başarılı! Yönlendiriliyorsunuz...");
       setTimeout(() => navigate("/network"), 1000);
-    } catch (error: any) {
-      if (error.response) {
-        toast.error(error.response.data.error || "Giriş başarısız!");
-      } else {
-        toast.error("Bilinmeyen bir hata oluştu!");
-      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Giriş başarısız!");
     }
   };
 

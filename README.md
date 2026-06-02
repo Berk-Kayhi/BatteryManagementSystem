@@ -1,111 +1,144 @@
-# 🔋 Battery Management System (BMS) Dashboard
+# Battery Management System + AI Prediction
 
-![Status](https://img.shields.io/badge/Status-Active_Development-success)
-![Docker](https://img.shields.io/badge/Docker-Enabled-blue)
-![Stack](https://img.shields.io/badge/Full_Stack-MERN_%2B_Python-orange)
+Battery Management System; batarya telemetri verilerini MQTT üzerinden canlı alan, Socket.IO ile frontend'e aktaran, PostgreSQL üzerinde geçmiş kayıt tutan ve fake-ai servisiyle SOC tahmini üreten full-stack bir web uygulamasıdır.
 
-A comprehensive full-stack application designed for real-time monitoring, analysis, and management of electric vehicle battery systems. This project leverages a **microservices architecture** to ingest sensor data, provide AI-driven State of Charge (SOC) predictions, and visualize system health through a modern web interface.
+Proje React tabanlı bir frontend, Node.js/Express backend, PostgreSQL + Sequelize veri katmanı, Mosquitto MQTT broker'ı, Python veri yayıncı servisi ve FastAPI tabanlı fake-ai tahmin servisinden oluşur. Backend tabloları SQL başlangıç dosyası yerine Sequelize modelleriyle oluşturur.
 
-## 🚀 Key Features
+## Teknolojiler
 
-- **Real-Time Monitoring**: Live tracking of critical battery metrics (Voltage, Current, Power, SOH, SOC) via **MQTT** and **WebSockets**.
-- **AI-Powered Predictions**: Integrated Machine Learning microservice for predicting Battery State of Charge (SOC) based on live sensor inputs.
-- **Interactive Visualization**:
-  - **Network Map**: Geospatial representation of the sensor/battery network.
-  - **Dashboard**: Dynamic gauges and charts for instant status updates.
-- **Historical Analytics**: Comprehensive logs and charts to analyze past performance trends and degradation.
-- **System Health**: Centralized view of system connectivity and node status.
-- **Secure Access**: Role-based user authentication system (Login/Register).
+- Frontend: React, Vite, TypeScript, Tailwind CSS, Recharts, Socket.IO Client
+- Backend: Node.js, Express, Sequelize, PostgreSQL, JWT, Socket.IO, MQTT
+- Yapay zeka servisi: Python, FastAPI
+- Data Publisher: Python, paho-mqtt, CSV veri akışı
+- Çalıştırma ortamı: Docker, Docker Compose, Mosquitto
 
-## 🛠 Technology Stack
+## Proje Yapısı
 
-### Backend & Infrastructure
-
-- **Node.js & Express**: Core API gateway handling data processing and client communication.
-- **Python (FastAPI)**: Dedicated microservice for AI/ML inference calculations.
-- **PostgreSQL**: Relational database for persistent storage of sensor logs and user data.
-- **MQTT (Eclipse Mosquitto)**: Lightweight messaging protocol for high-frequency sensor data ingestion.
-- **Socket.IO**: Real-time bidirectional event-based communication for frontend updates.
-- **Docker**: Container orchestration ensuring consistent deployment across environments.
-
-### Frontend
-
-- **React (Vite)**: High-performance UI library.
-- **TypeScript**: Ensuring strict type safety and code maintainability.
-- **Tailwind CSS**: Utility-first framework for responsive design.
-- **Recharts**: Data visualization library for rendering complex battery charts.
-- **Leaflet**: Interactive maps for tracking mobile battery units.
-
-## 📂 Project Structure
-
-```bash
-├── 📁 backend         # Node.js API Gateway, Database ORM, and MQTT Handler
-├── 📁 frontend        # React application source code (Vite + TypeScript)
-├── 📁 data-publisher  # Python script simulating IoT sensor nodes via MQTT
-├── 📁 fake-ai         # Python FastAPI service for SOC prediction simulation
-├── 📁 mosquitto       # MQTT Broker configuration
-└── 📁 csv-data        # NASA PCoE battery datasets used for simulation
+```text
+frontend/             React tabanlı frontend arayüzü
+backend/              Express API, Sequelize modelleri, MQTT ve Socket.IO akışı
+data-publisher/       CSV verisini MQTT topic'ine yayınlayan Python servis
+fake-ai/              SOC tahmini üreten FastAPI servisi
+mosquitto/config/     MQTT broker yapılandırması
+csv-data/             Simüle edilen batarya telemetri CSV verisi
+assets/               README görselleri
+docker-compose.yml    Uygulama servislerinin Docker tanımı
+.env.example          Ortam değişkenleri şablonu
 ```
 
-## ⚡ Getting Started
+## Kurulum
 
-### Prerequisites
+Önce ortam değişkenleri dosyasını oluşturun:
 
-- **Docker & Docker Compose** (for backend services)
-- **Node.js & npm** (for running the frontend locally)
+```bash
+cp .env.example .env
+```
 
-### Installation & Running
+`.env` içindeki `JWT_SECRET` ve veritabanı değerlerini kendi ortamınıza göre değiştirin. Docker Compose servisleri ortam değişkenlerini bu dosyadan okur; `docker-compose.yml` içinde inline environment bloğu tutulmaz.
 
-1.  **Clone the Repository**
+Ardından uygulamayı başlatın:
 
-    ```bash
-    git clone https://github.com/mqzesh34/BatteryManagementSystem.git
-    cd BatteryManagementSystem
-    ```
+```bash
+docker compose up --build
+```
 
-2.  **Start Backend Services (Docker)**
-    This command spins up the Database, Backend API, MQTT Broker, AI Service, and Data Publisher.
+Servisler varsayılan olarak şu adreslerde çalışır:
 
-    ```bash
-    docker-compose up --build -d
-    ```
+- Frontend: `http://localhost:5173`
+- Backend API ve Socket.IO: `http://localhost:3001`
+- PostgreSQL: `localhost:5432`
+- MQTT Broker: `localhost:1883`
+- Fake AI Service: `http://localhost:8001`
 
-3.  **Start Frontend Application**
-    Open a new terminal window and navigate to the frontend directory.
+Frontend'i ayrıca lokal çalıştırmak için:
 
-    ```bash
-    cd frontend
-    npm install
-    npm run dev
-    ```
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-4.  **Access the Dashboard**
-    Open your browser and navigate to:
-    `http://localhost:5173`
+## Veri Akışı
 
-## 📖 Usage Guide
+1. `data-publisher` servisi `csv-data/data.csv` dosyasındaki batarya verilerini sırayla okur.
+2. Her kayıt `sensor/data` MQTT topic'ine yayınlanır.
+3. Backend servisi bu topic'e abone olur ve canlı sensör verisini Socket.IO üzerinden `live_data` olarak frontend'e gönderir.
+4. Backend son sensör verisini düzenli aralıklarla fake-ai servisine gönderir.
+5. Fake-ai servisi SOC tahmini üretir.
+6. Backend sensör SOC, AI SOC ve ilgili batarya metriklerini Sequelize modeli üzerinden `timestamp_` tablosuna kaydeder.
+7. Frontend canlı verileri Socket.IO ile, geçmiş verileri fetch tabanlı API servisleriyle görüntüler.
 
-1.  **Authentication**: Create an account on the Register page or log in with existing credentials.
-2.  **Network Map**: View the geographical or logical layout of your battery sensors.
-3.  **Sensors**: Monitor live incoming data streams from connected battery units.
-4.  **Predictions**: Compare real-time sensor SOC readings with AI-generated predictions to detect anomalies.
-5.  **History**: select date ranges to view historical performance data.
+## Kullanım
 
-## 🔧 Architecture Overview
+1. `http://localhost:5173` adresini açın.
+2. Kayıt ekranından kullanıcı oluşturun veya mevcut hesabınızla giriş yapın.
+3. Şebeke haritası ekranında sistem görünümünü takip edin.
+4. Sensör ekranında canlı batarya telemetrisini görüntüleyin.
+5. Sistem durumu ekranında SOC, SOH ve gerilim düşüşü grafiklerini izleyin.
+6. Tahmin panelinde sensör SOC ve AI SOC değerlerini karşılaştırın.
+7. Geçmiş kayıtlar ekranında zaman damgalı SOC kayıtlarını inceleyin.
 
-1.  **Data Ingestion**: The `data-publisher` reads sensor data from CSV and publishes it to the `mosquitto` MQTT broker.
-2.  **Processing**: The `backend` subscribes to MQTT topics, receives data, and forwards it to the frontend via Socket.IO.
-3.  **Analysis**: The `backend` sends data to the `fake-ai` service to get SOC predictions.
-4.  **Storage**: All sensor readings and predictions are archived in `PostgreSQL`.
-5.  **Visualization**: The `frontend` fetches live streams and historical data to render charts and maps.
+## API Uçları
 
-## 📸 System Visuals
+- `POST /api/auth/register`: Yeni kullanıcı oluşturur.
+- `POST /api/auth/login`: Kullanıcı girişi yapar ve HTTP-only cookie üretir.
+- `POST /api/auth/logout`: Oturumu kapatır.
+- `GET /api/auth/me`: Aktif kullanıcı bilgisini döndürür.
+- `DELETE /api/auth/delete`: Aktif kullanıcı hesabını siler.
+- `GET /api/data/timestamp`: Tüm SOC tahmin kayıtlarını döndürür.
+- `GET /api/data/latest`: Son 10 SOC tahmin kaydını döndürür.
 
-Here are the system diagrams and architectural overviews:
+## Ekran Görüntüleri
 
-![System Architecture 1](assets/Battery%20Management%20System.jpg)
-![System Architecture 2](assets/Battery%20Management%20System%202.jpg)
-![System Architecture 3](assets/Battery%20Management%20System%203.jpg)
-![System Architecture 4](assets/Battery%20Management%20System%204.jpg)
-![System Architecture 5](assets/Battery%20Management%20System%205.jpg)
-![System Architecture 6](assets/Battery%20Management%20System%206.jpg)
+README görselleri [`assets`](assets) klasöründe tutulur.
+
+### Sistem Durumu
+
+![Batarya sistem durumu paneli](assets/Battery%20Management%20System.jpg)
+
+Sistem durumu ekranında SOH, SOC ve gerilim düşüşü oranı canlı telemetriye göre takip edilir; alt grafiklerde batarya sağlığı ve şarj durumunun zaman içindeki değişimi görüntülenir.
+
+### Tahmin Paneli
+
+![Yapay zeka SOC tahmin paneli](assets/Battery%20Management%20System%202.jpg)
+
+Tahmin panelinde fake-ai servisinden gelen AI SOC değeri ile sensörden okunan SOC değeri aynı grafikte karşılaştırılır; alt bölümde zaman damgalı kayıt listesi anlık olarak izlenir.
+
+### Geçmiş Kayıtlar
+
+![SOC geçmiş kayıtlar ekranı](assets/Battery%20Management%20System%203.jpg)
+
+Geçmiş kayıtlar ekranında PostgreSQL üzerinde tutulan SOC tahminleri zaman damgasına göre listelenir; kullanıcı son 20, son 50 veya tüm kayıtları filtreleyerek inceleyebilir.
+
+### Şebeke Haritası
+
+![Network topolojisi ekranı](assets/Battery%20Management%20System%204.jpg)
+
+Şebeke haritası ekranında trafo merkezleri ve AST/ESS bağlantıları interaktif topoloji üzerinde gösterilir; AST2 üzerinden bağlı ESS birimine geçilerek canlı batarya telemetri ekranına ulaşılır.
+
+### Canlı Sensör Verisi
+
+![Canlı batarya telemetri kartları](assets/Battery%20Management%20System%205.jpg)
+
+Canlı sensör ekranında MQTT üzerinden gelen batarya telemetrisi kartlar halinde sunulur; gerilim, akım, güç, sıcaklık, SOC, SOH ve limit değerleri artış/düşüş durumlarıyla birlikte anında güncellenir.
+
+![Canlı sensör gerilim grafiği](assets/Battery%20Management%20System%206.jpg)
+
+Gerilim, akım ve güç kartlarından seçilen metrik için modal grafik açılır; son 10 veri kaydı üzerinden ölçüm değerinin kısa dönemli hareketi takip edilir.
+
+## Geliştirme Komutları
+
+Docker kullanmadan servisleri ayrı ayrı çalıştırmak isterseniz ilgili dizinlerde bağımlılıkları kurup geliştirme komutlarını çalıştırabilirsiniz:
+
+```bash
+cd backend && npm install && npm start
+cd frontend && npm install && npm run dev
+cd data-publisher && pip install -r requirements.txt && python publisher.py
+cd fake-ai && pip install -r requirements.txt && uvicorn fake-ai:app --host 0.0.0.0 --port 8001
+```
+
+Bu yöntemle çalıştırırken `.env` içindeki `DB_HOST`, `MQTT_HOST`, `FAKE_AI_URL`, `VITE_API_BASE_URL` ve `VITE_SOCKET_URL` değerlerini lokal servis adreslerine göre güncellemeniz gerekir.
+
+## Lisans
+
+Bu proje özel bir kaynak inceleme lisansı ile sunulur. Kaynak kodları inceleme ve değerlendirme amacıyla görüntülenebilir; değiştirilmiş sürümlerin ticari amaçla kullanımı, dağıtımı veya satışı yasaktır. Ayrıntılar için `LICENSE` dosyasına bakabilirsiniz.

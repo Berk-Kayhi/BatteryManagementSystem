@@ -1,17 +1,11 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-import axios from "axios";
-
-interface User {
-    id: string;
-    email: string;
-    username?: string;
-}
+import { authApi, type User } from "../services/api";
 
 interface AuthContextType {
     user: User | null;
     isAuthenticated: boolean;
     isLoading: boolean;
-    login: (email: string, password: string) => Promise<void>;
+    login: (email: string, password: string, remember?: boolean) => Promise<void>;
     logout: () => Promise<void>;
 }
 
@@ -27,10 +21,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const response = await axios.get(`http://localhost:3001/auth/me`, {
-                    withCredentials: true,
-                });
-                setUser(response.data);
+                const currentUser = await authApi.me();
+                setUser(currentUser);
             } catch (error) {
                 setUser(null);
             } finally {
@@ -41,21 +33,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         checkAuth();
     }, []);
 
-    const login = async (email: string, password: string) => {
-        const response = await axios.post(
-            `http://localhost:3001/auth/login`,
-            { email, password },
-            { withCredentials: true }
-        );
-        setUser(response.data.user || response.data);
+    const login = async (email: string, password: string, remember = false) => {
+        const data = await authApi.login({ email, password, remember });
+        setUser(data.user);
     };
 
     const logout = async () => {
-        await axios.post(
-            `http://localhost:3001/auth/logout`,
-            {},
-            { withCredentials: true }
-        );
+        await authApi.logout();
         setUser(null);
     };
 

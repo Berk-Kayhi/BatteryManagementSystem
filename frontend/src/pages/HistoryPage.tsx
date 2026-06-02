@@ -1,15 +1,8 @@
 import { useState, useEffect } from "react";
 import { useUserAuth } from "../hooks/useUserAuth";
 import UserNavbar from "../components/userNavbar";
-import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-
-type TimestampData = {
-  id: number;
-  reading_timestamp: string;
-  ai_soc: string;
-  sensor_soc: string;
-};
+import { dataApi, type TimestampData } from "../services/api";
 
 export default function TimestampPage() {
   const { userName, userEmail, isLoading } = useUserAuth();
@@ -21,11 +14,8 @@ export default function TimestampPage() {
   useEffect(() => {
     const fetchTimestamps = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:3001/data/timestamp",
-          { withCredentials: true }
-        );
-        const reversed = [...response.data].reverse();
+        const timestamps = await dataApi.getTimestamps();
+        const reversed = [...timestamps].reverse();
         setData(limit ? reversed.slice(0, limit) : reversed);
         if (reversed.length > 0) {
           const latestTimestamp = new Date(

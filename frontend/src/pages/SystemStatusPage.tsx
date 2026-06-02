@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import {
   ResponsiveContainer,
   RadialBarChart,
@@ -14,6 +13,7 @@ import {
 import UserNavbar from "../components/userNavbar";
 import { useUserAuth } from "../hooks/useUserAuth";
 import { useSocketData } from "../hooks/useSocketData";
+import { dataApi } from "../services/api";
 
 const calculateVoltageDropPercentage = (
   liveData: Record<string, any>
@@ -52,14 +52,13 @@ export default function DetailedGraphs() {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/data/latest");
-        const dataList = response.data;
+        const dataList = await dataApi.getLatest();
 
         if (dataList && dataList.length > 0) {
 
           const formattedHistory = dataList.map((item: any) => ({
             ...item,
-            soc_pct: item.sensor_soc, // Normalize sensor_soc to soc_pct for consistency
+            soc_pct: item.sensor_soc,
           })).reverse();
 
 
@@ -104,13 +103,13 @@ export default function DetailedGraphs() {
   useEffect(() => {
     if (!liveData) return;
 
-    const normalizedData = {
+    const liveHistoryEntry = {
       ...liveData,
       reading_timestamp: new Date().toISOString(),
     };
 
     setHistoryData((prev) => {
-      const updated = [...prev, normalizedData];
+      const updated = [...prev, liveHistoryEntry];
       return updated.slice(-10);
     });
 

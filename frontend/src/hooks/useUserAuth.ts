@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { authApi } from "../services/api";
 
 export function useUserAuth() {
   const navigate = useNavigate();
@@ -11,14 +11,9 @@ export function useUserAuth() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/auth/me", {
-          withCredentials: true,
-        });
-        if (response.status === 200) {
-          const user = response.data;
-          setUserName(user.username);
-          setUserEmail(user.email);
-        }
+        const user = await authApi.me();
+        setUserName(user.username || "");
+        setUserEmail(user.email);
       } catch {
         navigate("/login");
       } finally {
